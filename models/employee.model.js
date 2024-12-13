@@ -88,7 +88,7 @@ class EmployeeModel {
           status: false,
           statusCode: 404,
           data: null,
-          error: "Partner doesn't exist",
+          error: "Employee doesn't exist",
         };
       }
 
@@ -162,7 +162,7 @@ class EmployeeModel {
     }
   };
 
-  fetchPartnerProfile = async (data) => {
+  fetchEmployeeProfile = async (data) => {
     const { employeeid: employeeId } = data.headers;
 
     try {
@@ -206,8 +206,8 @@ class EmployeeModel {
     }
 
     try {
-      const partner = await EmployeeAuthSchemaModel.findOne({ email });
-      if (!partner) {
+      const employee = await EmployeeAuthSchemaModel.findOne({ email });
+      if (!employee) {
         return {
           status: false,
           statusCode: 404,
@@ -222,9 +222,9 @@ class EmployeeModel {
         .update(resetToken)
         .digest("hex");
 
-      partner.passwordResetToken = hashedToken;
-      partner.passwordResetExpires = Date.now() + 3600000; // 1 hour
-      await partner.save();
+      employee.passwordResetToken = hashedToken;
+      employee.passwordResetExpires = Date.now() + 3600000; // 1 hour
+      await employee.save();
 
       const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
       const transporter = nodemailer.createTransport({
@@ -357,7 +357,7 @@ class EmployeeModel {
           status: false,
           statusCode: 404,
           data: null,
-          error: "Quotation not found or doesn't belong to the partner",
+          error: "Quotation not found or doesn't belong to the employee",
         };
       }
 
@@ -384,7 +384,7 @@ class EmployeeModel {
     }
   };
 
-  fetchPartnerQuotations = async (data) => {
+  fetchEmployeeQuotations = async (data) => {
     const { employeeid: employeeId } = data.headers;
 
     try {
@@ -417,7 +417,7 @@ class EmployeeModel {
     }
   };
 
-  deletePartnerQuotation = async (data) => {
+  deleteEmployeeQuotation = async (data) => {
     const { employeeid: employeeId } = data.headers;
     const { id } = data.body;
 
