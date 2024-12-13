@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { adminDBConnection } from "../../db/db-connection";
+import { adminDBConnection } from "../../db/db-connection.js";
 
 const NotificationSchema = new mongoose.Schema({
   message: { type: String, required: true },

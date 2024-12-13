@@ -6,7 +6,7 @@ import jwt from "jsonwebtoken";
 
 import { PartnerAuthSchemaModel } from "./schema/authSchema.model.js";
 import { PartnerQuotationSchemaModel } from "./schema/quotationSchema.model.js";
-import { AdminNotificationSchema } from "./schema/notificationSchema.modle.js";
+// import { AdminNotificationSchema } from "./schema/notificationSchema.modle.js";
 
 class PartnerModel {
   partnerSignUp = async (data) => {
