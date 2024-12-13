@@ -28,6 +28,10 @@ app.use("/admin", adminRouter);
 app.use("/partner", partnerRouter);
 app.use("/employee", employeeRouter);
 
+app.get("/", (rreq, res) => {
+  res.send("Hello welcome to Richa Adventure Holidays")
+})
+
 app.all("*", (req, res, next) => {
   const err = new HttpException(404, "Endpoint Not Found");
   next(err);
