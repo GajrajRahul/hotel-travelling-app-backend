@@ -24,11 +24,11 @@ app.use(
   })
 );
 
-app.use("/admin", adminRouter);
-app.use("/partner", partnerRouter);
-app.use("/employee", employeeRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/partner", partnerRouter);
+app.use("/api/employee", employeeRouter);
 
-app.get("/test", (rreq, res) => {
+app.get("/api/test", (rreq, res) => {
   res.send("Hello welcome to Richa Adventure Holidays")
 })  
 
