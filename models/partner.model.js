@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 
 import { PartnerAuthSchemaModel } from "./schema/authSchema.model.js";
 import { PartnerQuotationSchemaModel } from "./schema/quotationSchema.model.js";
+import { AdminNotificationSchema } from "./schema/notificationSchema.modle.js";
 
 class PartnerModel {
   partnerSignUp = async (data) => {
@@ -61,15 +62,23 @@ class PartnerModel {
         mobile,
         referringAgent,
         partnerId,
-        isApproved: false
-      })
+        isApproved: false,
+      });
 
       await newPartner.save();
+
+      // const newNotification = new AdminNotificationSchema({
+      //   message: `New partner signup: ${name}`,
+      //   email,
+      //   partnerId,
+      // });
+
+      // await newNotification.save();
 
       return {
         status: true,
         statusCode: 200,
-        data: "Partner created successfully",
+        data: "Signup successful! Waiting for admin approval.",
         error: null,
       };
     } catch (error) {
@@ -101,7 +110,7 @@ class PartnerModel {
         mobile,
         referringAgent,
         partnerId,
-        isApproved
+        isApproved,
       } = existingPartner;
 
       const isMatch = await bcrypt.compare(password, p_password);
@@ -114,14 +123,15 @@ class PartnerModel {
         };
       }
 
-      if(!isApproved) {
-        return {
-          status: false,
-          statusCode: 401,
-          data: null,
-          error: "Hold tight! Your account awaits admin approval—confirmation coming soon!",
-        }
-      }
+      // if (!isApproved) {
+      //   return {
+      //     status: false,
+      //     statusCode: 401,
+      //     data: null,
+      //     error:
+      //       "Hold tight! Your account awaits admin approval—confirmation coming soon!",
+      //   };
+      // }
 
       const token = jwt.sign(
         { email, name, partnerId },
@@ -165,7 +175,9 @@ class PartnerModel {
     const { partnerid: partnerId } = data.headers;
 
     try {
-      const partnerDetails = await PartnerAuthSchemaModel.findOne({ partnerId });
+      const partnerDetails = await PartnerAuthSchemaModel.findOne({
+        partnerId,
+      });
       if (!partnerDetails) {
         return {
           status: false,
@@ -308,7 +320,9 @@ class PartnerModel {
     const { partnerid: partnerId } = data.headers;
 
     try {
-      const partnerDetails = await PartnerAuthSchemaModel.findOne({ partnerId });
+      const partnerDetails = await PartnerAuthSchemaModel.findOne({
+        partnerId,
+      });
       if (!partnerDetails) {
         return {
           status: false,
@@ -356,11 +370,12 @@ class PartnerModel {
         };
       }
 
-      const updatedQuotation = await PartnerQuotationSchemaModel.findByIdAndUpdate(
-        id,
-        { ...updateData },
-        { new: true, runValidators: true } // new: true to return the updated document
-      );
+      const updatedQuotation =
+        await PartnerQuotationSchemaModel.findByIdAndUpdate(
+          id,
+          { ...updateData },
+          { new: true, runValidators: true } // new: true to return the updated document
+        );
 
       return {
         status: true,
@@ -416,10 +431,11 @@ class PartnerModel {
     const { id } = data.body;
 
     try {
-      const existingQuotations = await PartnerQuotationSchemaModel.findOneAndDelete({
-        _id: id,
-        partnerId,
-      });
+      const existingQuotations =
+        await PartnerQuotationSchemaModel.findOneAndDelete({
+          _id: id,
+          partnerId,
+        });
 
       if (!existingQuotations) {
         return {

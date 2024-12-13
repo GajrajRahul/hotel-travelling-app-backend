@@ -99,7 +99,7 @@ class AdminModel {
         companyName,
         mobile,
         referringAgent,
-        adminId
+        adminId,
       } = existingAdmin;
 
       const isMatch = await bcrypt.compare(password, p_password);
@@ -112,13 +112,9 @@ class AdminModel {
         };
       }
 
-      const token = jwt.sign(
-        { email, name, adminId },
-        process.env.JWT_SECRET,
-        {
-          expiresIn: "24h",
-        }
-      );
+      const token = jwt.sign({ email, name, adminId }, process.env.JWT_SECRET, {
+        expiresIn: "24h",
+      });
 
       const response = {
         token,
@@ -181,6 +177,55 @@ class AdminModel {
       };
     }
   };
+
+  // fetchAdminNotifications = async (data) => {
+  //   try {
+  //     const notifications = await AdminNotificationSchema.find().sort({
+  //       timestamp: -1,
+  //     }); // Sort by most recent
+  //     // .populate("partnerId", "name email"); // Optionally populate partner details
+
+  //     return {
+  //       status: true,
+  //       statusCode: 200,
+  //       data: notifications,
+  //       error: false,
+  //     };
+  //   } catch (error) {
+  //     return {
+  //       status: false,
+  //       statusCode: 500,
+  //       data: null,
+  //       error: "Something went wrong",
+  //     };
+  //   }
+  // };
+
+  // approveRegistration = async (data) => {
+  //   try {
+  //     const { partnerId, isApproved } = data.body;
+
+  //     // Update the isApproved flag in the partner database
+  //     const updatedPartner = await PartnerModel.findByIdAndUpdate(
+  //       partnerId,
+  //       { isApproved },
+  //       { new: true }
+  //     );
+
+  //     if (!updatedPartner) {
+  //       return res.status(404).json({ error: "Partner not found." });
+  //     }
+
+  //     res
+  //       .status(200)
+  //       .json({
+  //         message: "Partner approved successfully.",
+  //         partner: updatedPartner,
+  //       });
+  //   } catch (error) {
+  //     res.status(500).json({ error: "Error approving partner." });
+  //   }
+  // };
 
   adminForgotPassword = async (data) => {
     const { email } = data;

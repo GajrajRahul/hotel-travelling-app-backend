@@ -114,15 +114,15 @@ class EmployeeModel {
         };
       }
 
-      if (!isApproved) {
-        return {
-          status: false,
-          statusCode: 401,
-          data: null,
-          error:
-            "Hold tight! Your account awaits admin approval—confirmation coming soon!",
-        };
-      }
+      // if (!isApproved) {
+      //   return {
+      //     status: false,
+      //     statusCode: 401,
+      //     data: null,
+      //     error:
+      //       "Hold tight! Your account awaits admin approval—confirmation coming soon!",
+      //   };
+      // }
 
       const token = jwt.sign(
         { email, name, employeeId },

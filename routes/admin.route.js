@@ -30,6 +30,18 @@ adminRoute.get(
   awaitHandlerFactory(AdminController.fetchAdminProfile)
 );
 
+// adminRoute.get(
+//   "/notifications",
+//   [adminAuth()],
+//   awaitHandlerFactory(AdminController.fetchAdminNotifications)
+// );
+
+// adminRoute.put(
+//   "/approve-registration",
+//   [adminAuth()],
+//   awaitHandlerFactory(AdminController.approveRegistration)
+// );
+
 adminRoute.post(
   "/create-quotation",
   [adminAuth(), validateUpsertQuotationRequest],
