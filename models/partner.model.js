@@ -354,13 +354,13 @@ class PartnerModel {
   };
 
   updatePartnerQuotation = async (data) => {
-    const { partnerid: partnerId } = data.headers;
+    // const { partnerid: partnerId } = data.headers;
     const { id } = data.body;
 
     try {
       const existingQuotation = await PartnerQuotationSchemaModel.findOne({
         _id: id,
-        partnerId,
+        // partnerId,
       });
       if (!existingQuotation) {
         return {
@@ -395,7 +395,7 @@ class PartnerModel {
   };
 
   fetchPartnerQuotations = async (data) => {
-    const { partnerid: partnerId } = data.headers;
+    // const { partnerid: partnerId } = data.headers;
 
     try {
       const existingQuotations = await PartnerQuotationSchemaModel.find({
@@ -422,14 +422,14 @@ class PartnerModel {
   };
 
   deletePartnerQuotation = async (data) => {
-    const { partnerid: partnerId } = data.headers;
+    // const { partnerid: partnerId } = data.headers;
     const { id } = data.body;
 
     try {
       const existingQuotations =
         await PartnerQuotationSchemaModel.findOneAndDelete({
           _id: id,
-          partnerId,
+          // partnerId,
         });
 
       if (!existingQuotations) {

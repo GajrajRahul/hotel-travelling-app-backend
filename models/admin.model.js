@@ -379,13 +379,13 @@ class AdminModel {
   };
 
   updateAdminQuotation = async (data) => {
-    const { adminid: adminId } = data.headers;
+    // const { adminid: adminId } = data.headers;
     const { id } = data.body;
 
     try {
       const existingQuotation = await AdminQuotationSchemaModel.findOne({
         _id: id,
-        adminId,
+        // adminId,
       });
       if (!existingQuotation) {
         return {
@@ -447,14 +447,14 @@ class AdminModel {
   };
 
   deleteAdminQuotation = async (data) => {
-    const { adminid: adminId } = data.headers;
+    // const { adminid: adminId } = data.headers;
     const { id } = data.body;
 
     try {
       const existingQuotations =
         await AdminQuotationSchemaModel.findOneAndDelete({
           _id: id,
-          adminId,
+          // adminId,
         });
 
       if (!existingQuotations) {

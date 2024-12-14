@@ -345,13 +345,13 @@ class EmployeeModel {
   };
 
   updateEmployeeQuotation = async (data) => {
-    const { employeeid: employeeId } = data.headers;
+    // const { employeeid: employeeId } = data.headers;
     const { id } = data.body;
 
     try {
       const existingQuotation = await EmployeeQuotationSchemaModel.findOne({
         _id: id,
-        employeeId,
+        // employeeId,
       });
       if (!existingQuotation) {
         return {
@@ -413,14 +413,14 @@ class EmployeeModel {
   };
 
   deleteEmployeeQuotation = async (data) => {
-    const { employeeid: employeeId } = data.headers;
+    // const { employeeid: employeeId } = data.headers;
     const { id } = data.body;
 
     try {
       const existingQuotations =
         await EmployeeQuotationSchemaModel.findOneAndDelete({
           _id: id,
-          employeeId,
+          // employeeId,
         });
 
       if (!existingQuotations) {
