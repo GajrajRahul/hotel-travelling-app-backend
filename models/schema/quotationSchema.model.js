@@ -1,5 +1,14 @@
 import mongoose from "mongoose";
-import { adminDBConnection, employeeDBConnection, partnerDBConnection } from "../../db/db-connection.js";
+import {
+  adminDBConnection,
+  employeeDBConnection,
+  partnerDBConnection,
+} from "../../db/db-connection.js";
+
+const RoomTypeInfo = new mongoose.Schema({
+  roomName: { type: String, required: true },
+  roomCount: { type: String, required: true },
+});
 
 const HotelInfoSchema = new mongoose.Schema({
   id: { type: Number, default: 0 },
@@ -12,6 +21,7 @@ const HotelInfoSchema = new mongoose.Schema({
   isDinner: { type: Boolean, default: false },
   rooms: { type: Number, required: true },
   roomType: { type: [String], required: true },
+  // roomType: { type: [RoomTypeInfo], required: true },
   adult: { type: Number, required: true },
   child: { type: Number, default: 0 },
   extraBed: { type: Number, default: 0 },
@@ -32,6 +42,7 @@ const TransportInfoSchema = new mongoose.Schema({
 
 const QuotationSchema = new mongoose.Schema(
   {
+    quotationName: { type: String, required: true },
     travelInfo: {
       userName: { type: String, required: true },
       journeyStartDate: { type: Date, required: true },

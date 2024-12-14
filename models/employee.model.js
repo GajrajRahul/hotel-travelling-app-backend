@@ -386,26 +386,20 @@ class EmployeeModel {
   };
 
   fetchEmployeeQuotations = async (data) => {
-    const { employeeid: employeeId } = data.headers;
+    // const { employeeid: employeeId } = data.headers;
 
     try {
       const existingQuotations = await EmployeeQuotationSchemaModel.find({
-        employeeId,
+        // employeeId,
       });
-
-      if (!existingQuotations) {
-        return {
-          status: false,
-          statusCode: 404,
-          data: null,
-          error: "Employee doesn't exist",
-        };
-      }
 
       return {
         status: true,
         statusCode: 200,
-        data: existingQuotations,
+        data: existingQuotations.map((quotation) => ({
+          ...quotation.toObject(),
+          id: quotation._id.toString(),
+        })),
         error: null,
       };
     } catch (error) {

@@ -399,22 +399,16 @@ class PartnerModel {
 
     try {
       const existingQuotations = await PartnerQuotationSchemaModel.find({
-        partnerId,
+        // partnerId,
       });
-
-      if (!existingQuotations) {
-        return {
-          status: false,
-          statusCode: 404,
-          data: null,
-          error: "Partner doesn't exist",
-        };
-      }
 
       return {
         status: true,
         statusCode: 200,
-        data: existingQuotations,
+        data: existingQuotations.map((quotation) => ({
+          ...quotation.toObject(),
+          id: quotation._id.toString(),
+        })),
         error: null,
       };
     } catch (error) {
