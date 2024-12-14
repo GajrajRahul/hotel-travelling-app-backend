@@ -20,7 +20,7 @@ const HotelInfoSchema = new mongoose.Schema({
 const CitySchema = new mongoose.Schema({
   id: { type: Number, default: 0 },
   cityName: { type: String, required: true },
-  hotelInfo: { type: HotelInfoSchema, required: true },
+  hotelInfo: { type: [HotelInfoSchema], required: true },
 });
 
 const TransportInfoSchema = new mongoose.Schema({
@@ -44,7 +44,7 @@ const QuotationSchema = new mongoose.Schema(
       type: TransportInfoSchema,
       required: true,
     },
-    partnerId: { type: String, required: true },
+    // partnerId: { type: String, required: true },
   },
   { timestamps: true }
 );

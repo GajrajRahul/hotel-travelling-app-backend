@@ -318,6 +318,7 @@ class PartnerModel {
 
   createPartnerQuotation = async (data) => {
     const { partnerid: partnerId } = data.headers;
+    // const { quotationData } = data.body;
 
     try {
       const partnerDetails = await PartnerAuthSchemaModel.findOne({
@@ -332,7 +333,7 @@ class PartnerModel {
         };
       }
 
-      const newQuotation = new PartnerQuotationSchemaModel(quotationData);
+      const newQuotation = new PartnerQuotationSchemaModel(data.body);
 
       await newQuotation.save();
 

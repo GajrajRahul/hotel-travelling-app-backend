@@ -309,6 +309,7 @@ class EmployeeModel {
 
   createEmployeeQuotation = async (data) => {
     const { employeeid: employeeId } = data.headers;
+    // const { quotationData } = data.body;
 
     try {
       const employeeDetails = await EmployeeAuthSchemaModel.findOne({
@@ -323,7 +324,7 @@ class EmployeeModel {
         };
       }
 
-      const newQuotation = new EmployeeQuotationSchemaModel(quotationData);
+      const newQuotation = new EmployeeQuotationSchemaModel(data.body);
 
       await newQuotation.save();
 

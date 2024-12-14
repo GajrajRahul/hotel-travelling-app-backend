@@ -77,27 +77,30 @@ export const validateUpsertQuotationRequest = [
   body("citiesHotelsInfo.cities.*.cityName")
     .notEmpty()
     .withMessage("City name is required"),
-  body("citiesHotelsInfo.cities.*.hotelInfo.hotelName")
+    body("citiesHotelsInfo.cities.*.hotelInfo")
+    .isArray({ min: 1 })
+    .withMessage("Minimum 1 hotel is required"),
+  body("citiesHotelsInfo.cities.*.hotelInfo.*.hotelName")
     .notEmpty()
     .withMessage("Hotel name is required"),
-  body("citiesHotelsInfo.cities.*.hotelInfo.hotelType")
+  body("citiesHotelsInfo.cities.*.hotelInfo.*.hotelType")
     .notEmpty()
     .withMessage("Hotel type is required"),
-  body("citiesHotelsInfo.cities.*.hotelInfo.rooms")
+  body("citiesHotelsInfo.cities.*.hotelInfo.*.rooms")
     .isInt({ gt: 0 })
     .withMessage("Minimum 1 room is required"),
-  body("citiesHotelsInfo.cities.*.hotelInfo.roomType")
+  body("citiesHotelsInfo.cities.*.hotelInfo.*.roomType")
     .isArray({ min: 1 })
     .withMessage("Minimum 1 room type is required"),
-  body("citiesHotelsInfo.cities.*.hotelInfo.adult")
+  body("citiesHotelsInfo.cities.*.hotelInfo.*.adult")
     .isInt({ gt: 0 })
     .withMessage("Minimum 1 person is required"),
   // body("citiesHotelsInfo.cities.*.hotelInfo.checkIn").isISO8601().withMessage("Hotel check-in date is required"),
   // body("citiesHotelsInfo.cities.*.hotelInfo.checkOut").isISO8601().withMessage("Hotel check-out date is required"),
-  body("citiesHotelsInfo.cities.*.hotelInfo.checkIn")
+  body("citiesHotelsInfo.cities.*.hotelInfo.*.checkIn")
     .notEmpty()
     .withMessage("Hotel check-in date is required"),
-  body("citiesHotelsInfo.cities.*.hotelInfo.checkOut")
+  body("citiesHotelsInfo.cities.*.hotelInfo.*.checkOut")
     .notEmpty()
     .withMessage("Hotel check-out date is required"),
 

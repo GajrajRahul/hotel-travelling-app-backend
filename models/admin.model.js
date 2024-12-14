@@ -342,6 +342,7 @@ class AdminModel {
 
   createAdminQuotation = async (data) => {
     const { adminid: adminId } = data.headers;
+    // const { quotationData } = data.body;
 
     try {
       const adminDetails = await AdminAuthSchemaModel.findOne({
@@ -356,7 +357,7 @@ class AdminModel {
         };
       }
 
-      const newQuotation = new AdminQuotationSchemaModel(quotationData);
+      const newQuotation = new AdminQuotationSchemaModel(data.body);
 
       await newQuotation.save();
 
@@ -367,6 +368,7 @@ class AdminModel {
         error: null,
       };
     } catch (error) {
+      console.log(error)
       return {
         status: false,
         statusCode: 500,
