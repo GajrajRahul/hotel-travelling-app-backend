@@ -368,7 +368,7 @@ class AdminModel {
         error: null,
       };
     } catch (error) {
-      console.log(error)
+      // console.log(error);
       return {
         status: false,
         statusCode: 500,
@@ -420,26 +420,20 @@ class AdminModel {
   };
 
   fetchAdminQuotations = async (data) => {
-    const { adminid: adminId } = data.headers;
+    // const { adminid: adminId } = data.headers;
 
     try {
       const existingQuotations = await AdminQuotationSchemaModel.find({
-        adminId,
+        // adminId,
       });
-
-      if (!existingQuotations) {
-        return {
-          status: false,
-          statusCode: 404,
-          data: null,
-          error: "Admin doesn't exist",
-        };
-      }
 
       return {
         status: true,
         statusCode: 200,
-        data: existingQuotations,
+        data: existingQuotations.map((quotation) => ({
+          ...quotation.toObject(),
+          id: quotation._id.toString(),
+        })),
         error: null,
       };
     } catch (error) {
