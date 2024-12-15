@@ -404,7 +404,6 @@ class AdminModel {
           { citiesHotelsInfo, quotationName, transportInfo, travelinfo },
           { new: true, runValidators: true } // new: true to return the updated document
         );
-        console.log(updatedQuotation)
 
       return {
         status: true,

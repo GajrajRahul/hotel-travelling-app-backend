@@ -14,6 +14,7 @@ const HotelInfoSchema = new mongoose.Schema({
   id: { type: Number, default: 0 },
   hotelName: { type: String, required: true },
   hotelType: { type: String, required: true },
+  hotelImage: { type: String },
   checkIn: { type: Date, required: true },
   checkOut: { type: Date, required: true },
   isBreakfast: { type: Boolean, default: false },
@@ -25,6 +26,8 @@ const HotelInfoSchema = new mongoose.Schema({
   adult: { type: Number, required: true },
   child: { type: Number, default: 0 },
   extraBed: { type: Number, default: 0 },
+  price: { type: String },
+  image: { type: String }
 });
 
 const CitySchema = new mongoose.Schema({
