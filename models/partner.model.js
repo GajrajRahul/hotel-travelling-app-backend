@@ -355,7 +355,7 @@ class PartnerModel {
 
   updatePartnerQuotation = async (data) => {
     // const { partnerid: partnerId } = data.headers;
-    const { id, citiesHHotelsInfo, quotationName, transportInfo, travelinfo } =
+    const { id, citiesHotelsInfo, quotationName, transportInfo, travelinfo } =
       data.body;
 
     try {
@@ -375,7 +375,7 @@ class PartnerModel {
       const updatedQuotation =
         await PartnerQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { citiesHHotelsInfo, quotationName, transportInfo, travelinfo },
+          { citiesHotelsInfo, quotationName, transportInfo, travelinfo },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 

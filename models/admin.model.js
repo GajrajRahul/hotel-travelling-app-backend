@@ -380,7 +380,7 @@ class AdminModel {
 
   updateAdminQuotation = async (data) => {
     // const { adminid: adminId } = data.headers;
-    const { id, citiesHHotelsInfo, quotationName, transportInfo, travelinfo } =
+    const { id, citiesHotelsInfo, quotationName, transportInfo, travelinfo } =
       data.body;
 
     try {
@@ -401,9 +401,10 @@ class AdminModel {
         await AdminQuotationSchemaModel.findByIdAndUpdate(
           id,
           // { ...updateData },
-          { citiesHHotelsInfo, quotationName, transportInfo, travelinfo },
+          { citiesHotelsInfo, quotationName, transportInfo, travelinfo },
           { new: true, runValidators: true } // new: true to return the updated document
         );
+        console.log(updatedQuotation)
 
       return {
         status: true,
