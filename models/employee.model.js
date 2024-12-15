@@ -346,7 +346,7 @@ class EmployeeModel {
 
   updateEmployeeQuotation = async (data) => {
     // const { employeeid: employeeId } = data.headers;
-    const { id } = data.body;
+    const { id, citiesHHotelsInfo, quotationName, transportInfo, travelinfo } = data.body;
 
     try {
       const existingQuotation = await EmployeeQuotationSchemaModel.findOne({
@@ -365,7 +365,7 @@ class EmployeeModel {
       const updatedQuotation =
         await EmployeeQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { ...updateData },
+          { citiesHHotelsInfo, quotationName, transportInfo, travelinfo },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 

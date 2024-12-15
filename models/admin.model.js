@@ -380,7 +380,8 @@ class AdminModel {
 
   updateAdminQuotation = async (data) => {
     // const { adminid: adminId } = data.headers;
-    const { id } = data.body;
+    const { id, citiesHHotelsInfo, quotationName, transportInfo, travelinfo } =
+      data.body;
 
     try {
       const existingQuotation = await AdminQuotationSchemaModel.findOne({
@@ -399,7 +400,8 @@ class AdminModel {
       const updatedQuotation =
         await AdminQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { ...updateData },
+          // { ...updateData },
+          { citiesHHotelsInfo, quotationName, transportInfo, travelinfo },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 
