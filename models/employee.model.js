@@ -324,7 +324,10 @@ class EmployeeModel {
         };
       }
 
-      const newQuotation = new EmployeeQuotationSchemaModel(data.body);
+      const newQuotation = new EmployeeQuotationSchemaModel({
+        ...data.body,
+        employeeId,
+      });
 
       await newQuotation.save();
 
@@ -345,13 +348,14 @@ class EmployeeModel {
   };
 
   updateEmployeeQuotation = async (data) => {
-    // const { employeeid: employeeId } = data.headers;
-    const { id, citiesHotelsInfo, quotationName, transportInfo, travelinfo } = data.body;
+    const { employeeid: employeeId } = data.headers;
+    const { id, citiesHotelsInfo, quotationName, transportInfo, travelinfo } =
+      data.body;
 
     try {
       const existingQuotation = await EmployeeQuotationSchemaModel.findOne({
         _id: id,
-        // employeeId,
+        employeeId
       });
       if (!existingQuotation) {
         return {
@@ -365,7 +369,7 @@ class EmployeeModel {
       const updatedQuotation =
         await EmployeeQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { citiesHotelsInfo, quotationName, transportInfo, travelinfo },
+          { citiesHotelsInfo, quotationName, transportInfo, travelinfo, employeeId },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 
@@ -386,11 +390,11 @@ class EmployeeModel {
   };
 
   fetchEmployeeQuotations = async (data) => {
-    // const { employeeid: employeeId } = data.headers;
+    const { employeeid: employeeId } = data.headers;
 
     try {
       const existingQuotations = await EmployeeQuotationSchemaModel.find({
-        // employeeId,
+        employeeId
       });
 
       return {
@@ -413,14 +417,14 @@ class EmployeeModel {
   };
 
   deleteEmployeeQuotation = async (data) => {
-    // const { employeeid: employeeId } = data.headers;
+    const { employeeid: employeeId } = data.headers;
     const { id } = data.body;
 
     try {
       const existingQuotations =
         await EmployeeQuotationSchemaModel.findOneAndDelete({
           _id: id,
-          // employeeId,
+          employeeId
         });
 
       if (!existingQuotations) {

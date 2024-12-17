@@ -5,7 +5,11 @@ import crypto, { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
 
 import { AdminAuthSchemaModel } from "./schema/authSchema.model.js";
-import { AdminQuotationSchemaModel } from "./schema/quotationSchema.model.js";
+import {
+  AdminQuotationSchemaModel,
+  EmployeeQuotationSchemaModel,
+  PartnerQuotationSchemaModel,
+} from "./schema/quotationSchema.model.js";
 
 class AdminModel {
   adminSignUp = async (data) => {
@@ -342,7 +346,6 @@ class AdminModel {
 
   createAdminQuotation = async (data) => {
     const { adminid: adminId } = data.headers;
-    // const { quotationData } = data.body;
 
     try {
       const adminDetails = await AdminAuthSchemaModel.findOne({
@@ -357,7 +360,10 @@ class AdminModel {
         };
       }
 
-      const newQuotation = new AdminQuotationSchemaModel(data.body);
+      const newQuotation = new AdminQuotationSchemaModel({
+        ...data.body,
+        adminId,
+      });
 
       await newQuotation.save();
 
@@ -380,38 +386,49 @@ class AdminModel {
 
   updateAdminQuotation = async (data) => {
     // const { adminid: adminId } = data.headers;
-    const { id, citiesHotelsInfo, quotationName, transportInfo, travelinfo } =
-      data.body;
+    const { id, adminId, partnerId, employeeId } = data.body;
 
     try {
-      const existingQuotation = await AdminQuotationSchemaModel.findOne({
-        _id: id,
-        // adminId,
-      });
-      if (!existingQuotation) {
-        return {
-          status: false,
-          statusCode: 404,
-          data: null,
-          error: "Quotation not found or doesn't belong to the admin",
-        };
-      }
+      const updatePromises = [
+        AdminQuotationSchemaModel.findOneAndUpdate(
+          { _id: id, adminId },
+          { $set: data.body },
+          { new: true }
+        ),
+        PartnerQuotationSchemaModel.findOneAndUpdate(
+          { _id: id, partnerId },
+          { $set: data.body },
+          { new: true }
+        ),
+        EmployeeQuotationSchemaModel.findOneAndUpdate(
+          { _id: id, employeeId },
+          { $set: data.body },
+          { new: true }
+        ),
+      ];
 
-      const updatedQuotation =
-        await AdminQuotationSchemaModel.findByIdAndUpdate(
-          id,
-          // { ...updateData },
-          { citiesHotelsInfo, quotationName, transportInfo, travelinfo },
-          { new: true, runValidators: true } // new: true to return the updated document
-        );
+      const updatedQuotation = await Promise.any(updatePromises);
 
       return {
         status: true,
         statusCode: 200,
-        data: updatedQuotation,
+        data: {
+          ...updatedQuotation.toObject(),
+          id: updatedQuotation._id.toString(),
+        },
         error: null,
       };
     } catch (error) {
+      if (error instanceof AggregateError) {
+        // If no matching document is found in any collection
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Quotation not found in any collection",
+        };
+      }
+
       return {
         status: false,
         statusCode: 500,
@@ -421,18 +438,31 @@ class AdminModel {
     }
   };
 
-  fetchAdminQuotations = async (data) => {
-    // const { adminid: adminId } = data.headers;
-
+  fetchAdminQuotations = async () => {
     try {
-      const existingQuotations = await AdminQuotationSchemaModel.find({
-        // adminId,
-      });
+      const [adminQuotations, partnerQuotations, employeeQuotations] =
+        await Promise.allSettled([
+          AdminQuotationSchemaModel.find({}),
+          PartnerQuotationSchemaModel.find({}),
+          EmployeeQuotationSchemaModel.find({}),
+        ]);
+
+      const allQuotations = [
+        ...(adminQuotations.status === "fulfilled"
+          ? adminQuotations.value
+          : []),
+        ...(partnerQuotations.status === "fulfilled"
+          ? partnerQuotations.value
+          : []),
+        ...(employeeQuotations.status === "fulfilled"
+          ? employeeQuotations.value
+          : []),
+      ];
 
       return {
         status: true,
         statusCode: 200,
-        data: existingQuotations.map((quotation) => ({
+        data: allQuotations.map((quotation) => ({
           ...quotation.toObject(),
           id: quotation._id.toString(),
         })),
@@ -450,31 +480,37 @@ class AdminModel {
 
   deleteAdminQuotation = async (data) => {
     // const { adminid: adminId } = data.headers;
-    const { id } = data.body;
+    const { id, adminId, partnerId, employeeId } = data.body;
 
     try {
-      const existingQuotations =
-        await AdminQuotationSchemaModel.findOneAndDelete({
-          _id: id,
-          // adminId,
-        });
+      const deletePromises = [
+        AdminQuotationSchemaModel.findOneAndDelete({ _id: id, adminId }),
+        PartnerQuotationSchemaModel.findOneAndDelete({ _id: id, partnerId }),
+        EmployeeQuotationSchemaModel.findOneAndDelete({ _id: id, employeeId }),
+      ];
 
-      if (!existingQuotations) {
-        return {
-          status: false,
-          statusCode: 404,
-          data: null,
-          error: "Admin doesn't exist",
-        };
-      }
+      const deletedQuotation = await Promise.any(deletePromises);
 
       return {
         status: true,
         statusCode: 200,
-        data: existingQuotations,
+        data: {
+          id: deletedQuotation._id.toString(),
+          message: "Quotation deleted successfully",
+        },
         error: null,
       };
     } catch (error) {
+      if (error instanceof AggregateError) {
+        // If no quotation is found in any collection
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Quotation not found in any collection",
+        };
+      }
+
       return {
         status: false,
         statusCode: 500,

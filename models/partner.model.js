@@ -333,7 +333,10 @@ class PartnerModel {
         };
       }
 
-      const newQuotation = new PartnerQuotationSchemaModel(data.body);
+      const newQuotation = new PartnerQuotationSchemaModel({
+        ...data.body,
+        partnerId,
+      });
 
       await newQuotation.save();
 
@@ -354,14 +357,14 @@ class PartnerModel {
   };
 
   updatePartnerQuotation = async (data) => {
-    // const { partnerid: partnerId } = data.headers;
+    const { partnerid: partnerId } = data.headers;
     const { id, citiesHotelsInfo, quotationName, transportInfo, travelinfo } =
       data.body;
 
     try {
       const existingQuotation = await PartnerQuotationSchemaModel.findOne({
         _id: id,
-        // partnerId,
+        partnerId,
       });
       if (!existingQuotation) {
         return {
@@ -375,7 +378,13 @@ class PartnerModel {
       const updatedQuotation =
         await PartnerQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { citiesHotelsInfo, quotationName, transportInfo, travelinfo },
+          {
+            citiesHotelsInfo,
+            quotationName,
+            transportInfo,
+            travelinfo,
+            partnerId,
+          },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 
@@ -396,11 +405,11 @@ class PartnerModel {
   };
 
   fetchPartnerQuotations = async (data) => {
-    // const { partnerid: partnerId } = data.headers;
+    const { partnerid: partnerId } = data.headers;
 
     try {
       const existingQuotations = await PartnerQuotationSchemaModel.find({
-        // partnerId,
+        partnerId,
       });
 
       return {
@@ -423,14 +432,14 @@ class PartnerModel {
   };
 
   deletePartnerQuotation = async (data) => {
-    // const { partnerid: partnerId } = data.headers;
+    const { partnerid: partnerId } = data.headers;
     const { id } = data.body;
 
     try {
       const existingQuotations =
         await PartnerQuotationSchemaModel.findOneAndDelete({
           _id: id,
-          // partnerId,
+          partnerId,
         });
 
       if (!existingQuotations) {

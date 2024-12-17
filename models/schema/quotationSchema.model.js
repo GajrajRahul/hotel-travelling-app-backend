@@ -27,7 +27,7 @@ const HotelInfoSchema = new mongoose.Schema({
   child: { type: Number, default: 0 },
   extraBed: { type: Number, default: 0 },
   price: { type: String },
-  image: { type: String }
+  image: { type: String },
 });
 
 const CitySchema = new mongoose.Schema({
@@ -58,7 +58,10 @@ const QuotationSchema = new mongoose.Schema(
       type: TransportInfoSchema,
       required: true,
     },
-    // partnerId: { type: String, required: true },
+    adminId: { type: String },
+    employeeId: { type: String },
+    partnerId: { type: String },
+    totalAmount: { type: String },
   },
   { timestamps: true }
 );
