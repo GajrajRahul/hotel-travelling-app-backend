@@ -479,17 +479,43 @@ class AdminModel {
   };
 
   deleteAdminQuotation = async (data) => {
-    // const { adminid: adminId } = data.headers;
-    const { id, adminId, partnerId, employeeId } = data.body;
+    const {
+      adminid: adminId,
+      partnerid: partnerId,
+      employeeid: employeeId,
+    } = data.headers;
+    const { id } = data.body;
 
     try {
-      const deletePromises = [
-        AdminQuotationSchemaModel.findOneAndDelete({ _id: id, adminId }),
-        PartnerQuotationSchemaModel.findOneAndDelete({ _id: id, partnerId }),
-        EmployeeQuotationSchemaModel.findOneAndDelete({ _id: id, employeeId }),
-      ];
+      let deletedQuotation = null;
 
-      const deletedQuotation = await Promise.any(deletePromises);
+      if (!deletedQuotation) {
+        deletedQuotation = await AdminQuotationSchemaModel.findOneAndDelete({
+          _id: id,
+          adminId,
+        });
+      }
+      if (!deletedQuotation) {
+        deletedQuotation = await PartnerQuotationSchemaModel.findOneAndDelete({
+          _id: id,
+          partnerId,
+        });
+      }
+      if (!deletedQuotation) {
+        deletedQuotation = await EmployeeQuotationSchemaModel.findOneAndDelete({
+          _id: id,
+          employeeId,
+        });
+      }
+
+      if (!deletedQuotation) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Quotation not found in any collection",
+        };
+      }
 
       return {
         status: true,
@@ -502,7 +528,6 @@ class AdminModel {
       };
     } catch (error) {
       if (error instanceof AggregateError) {
-        // If no quotation is found in any collection
         return {
           status: false,
           statusCode: 404,
