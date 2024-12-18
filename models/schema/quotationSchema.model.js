@@ -41,6 +41,8 @@ const TransportInfoSchema = new mongoose.Schema({
   from: { type: String, required: true },
   checkpoints: { type: [String], default: [] },
   to: { type: String, required: true },
+  transportStartDate: { type: Date, required: true },
+  transportEndDate: { type: Date, required: true },
 });
 
 const QuotationSchema = new mongoose.Schema(
