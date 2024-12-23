@@ -32,6 +32,12 @@ employeeRoute.get(
   awaitHandlerFactory(EmployeeController.fetchEmployeeProfile)
 );
 
+employeeRoute.put(
+  "/update-profile",
+  [employeeAuth()],
+  awaitHandlerFactory(EmployeeController.updateEmployeeProfile)
+);
+
 employeeRoute.post(
   "/forgot-password",
   [validateForgotPasswordRequest],

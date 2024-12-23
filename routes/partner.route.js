@@ -32,6 +32,12 @@ partnerRouter.get(
   awaitHandlerFactory(PartnerController.fetchPartnerProfile)
 );
 
+partnerRouter.put(
+  "/update-profile",
+  [partnerAuth()],
+  awaitHandlerFactory(PartnerController.updatePartnerProfile)
+);
+
 partnerRouter.post(
   "/forgot-password",
   [validateForgotPasswordRequest],

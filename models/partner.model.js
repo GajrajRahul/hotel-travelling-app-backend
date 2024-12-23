@@ -22,7 +22,9 @@ class PartnerModel {
     } = data;
 
     try {
-      const existingPartner = await PartnerAuthSchemaModel.findOne({ email });
+      const existingPartner = await PartnerAuthSchemaModel.findOne({
+        email: email.toLowerCase(),
+      });
       if (existingPartner) {
         return {
           status: false,
@@ -91,7 +93,9 @@ class PartnerModel {
     try {
       const { email, password } = data;
 
-      const existingPartner = await PartnerAuthSchemaModel.findOne({ email });
+      const existingPartner = await PartnerAuthSchemaModel.findOne({
+        email: email.toLowerCase(),
+      });
       if (!existingPartner) {
         return {
           status: false,
@@ -199,6 +203,33 @@ class PartnerModel {
         statusCode: 500,
         data: null,
         error: "Something went wrong",
+      };
+    }
+  };
+
+  updatePartnerProfile = async (data) => {
+    const { partnerid: partnerId } = data.headers;
+
+    try {
+      const existingPartnerProfile =
+        await PartnerAuthSchemaModel.findOneAndUpdate(
+          { partnerId },
+          data.body,
+          { new: true }
+        );
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: existingPartnerProfile,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
       };
     }
   };

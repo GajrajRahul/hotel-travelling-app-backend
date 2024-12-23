@@ -30,6 +30,12 @@ adminRoute.get(
   awaitHandlerFactory(AdminController.fetchAdminProfile)
 );
 
+adminRoute.put(
+  "/update-profile",
+  [adminAuth()],
+  awaitHandlerFactory(AdminController.updateAdminProfile)
+);
+
 // adminRoute.get(
 //   "/notifications",
 //   [adminAuth()],

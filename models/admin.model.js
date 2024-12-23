@@ -25,7 +25,9 @@ class AdminModel {
     } = data;
 
     try {
-      const existingAdmin = await AdminAuthSchemaModel.findOne({ email });
+      const existingAdmin = await AdminAuthSchemaModel.findOne({
+        email: email.toLowerCase(),
+      });
       if (existingAdmin) {
         return {
           status: false,
@@ -85,7 +87,9 @@ class AdminModel {
     try {
       const { email, password } = data;
 
-      const existingAdmin = await AdminAuthSchemaModel.findOne({ email });
+      const existingAdmin = await AdminAuthSchemaModel.findOne({
+        email: email.toLowerCase(),
+      });
       if (!existingAdmin) {
         return {
           status: false,
@@ -340,6 +344,32 @@ class AdminModel {
         statusCode: 500,
         data: null,
         error: error,
+      };
+    }
+  };
+
+  updateAdminProfile = async (data) => {
+    const { adminid: adminId } = data.headers;
+
+    try {
+      const existingAdminProfile = await AdminAuthSchemaModel.findOneAndUpdate(
+        { adminId },
+        data.body,
+        { new: true }
+      );
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: existingAdminProfile,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
       };
     }
   };

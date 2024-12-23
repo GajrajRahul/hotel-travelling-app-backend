@@ -65,6 +65,20 @@ class PartnerController {
     }
   };
 
+  updatePartnerProfile = async (req, res, next) => {
+      try {
+        this.checkValidation(req);
+        const response = await PartnerModel.updatePartnerProfile(req);
+  
+        const { statusCode } = response;
+  
+        res.status(statusCode).send(response);
+      } catch (error) {
+  
+        res.status(400).send({ status: false, data: null, error: error.message });
+      }
+    }
+
   partnerResetPassword = async (req, res, next) => {
     try {
       this.checkValidation(req);

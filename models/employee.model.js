@@ -21,7 +21,9 @@ class EmployeeModel {
     } = data;
 
     try {
-      const existingEmployee = await EmployeeAuthSchemaModel.findOne({ email });
+      const existingEmployee = await EmployeeAuthSchemaModel.findOne({
+        email: email.toLowerCase(),
+      });
       if (existingEmployee) {
         return {
           status: false,
@@ -82,7 +84,9 @@ class EmployeeModel {
     try {
       const { email, password } = data;
 
-      const existingEmployee = await EmployeeAuthSchemaModel.findOne({ email });
+      const existingEmployee = await EmployeeAuthSchemaModel.findOne({
+        email: email.toLowerCase(),
+      });
       if (!existingEmployee) {
         return {
           status: false,
@@ -190,6 +194,33 @@ class EmployeeModel {
         statusCode: 500,
         data: null,
         error: "Something went wrong",
+      };
+    }
+  };
+
+  updateEmployeeProfile = async (data) => {
+    const { employeeid: employeeId } = data.headers;
+
+    try {
+      const existingEmployeeProfile =
+        await EmployeeAuthSchemaModel.findOneAndUpdate(
+          { employeeId },
+          data.body,
+          { new: true }
+        );
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: existingEmployeeProfile,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
       };
     }
   };
@@ -355,7 +386,7 @@ class EmployeeModel {
     try {
       const existingQuotation = await EmployeeQuotationSchemaModel.findOne({
         _id: id,
-        employeeId
+        employeeId,
       });
       if (!existingQuotation) {
         return {
@@ -369,7 +400,13 @@ class EmployeeModel {
       const updatedQuotation =
         await EmployeeQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { citiesHotelsInfo, quotationName, transportInfo, travelinfo, employeeId },
+          {
+            citiesHotelsInfo,
+            quotationName,
+            transportInfo,
+            travelinfo,
+            employeeId,
+          },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 
@@ -394,7 +431,7 @@ class EmployeeModel {
 
     try {
       const existingQuotations = await EmployeeQuotationSchemaModel.find({
-        employeeId
+        employeeId,
       });
 
       return {
@@ -424,7 +461,7 @@ class EmployeeModel {
       const existingQuotations =
         await EmployeeQuotationSchemaModel.findOneAndDelete({
           _id: id,
-          employeeId
+          employeeId,
         });
 
       if (!existingQuotations) {
