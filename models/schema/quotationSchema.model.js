@@ -64,6 +64,8 @@ const QuotationSchema = new mongoose.Schema(
     employeeId: { type: String },
     partnerId: { type: String },
     totalAmount: { type: String },
+    userName: { type: String },
+    companyName: { type: String },
   },
   { timestamps: true }
 );
