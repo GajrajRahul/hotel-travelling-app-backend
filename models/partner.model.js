@@ -3,9 +3,11 @@ import path from "path";
 import fs from "fs";
 import crypto, { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 import { PartnerAuthSchemaModel } from "./schema/authSchema.model.js";
 import { PartnerQuotationSchemaModel } from "./schema/quotationSchema.model.js";
+import s3 from "../utils/AwsSdkConfig.js";
 // import { AdminNotificationSchema } from "./schema/notificationSchema.modle.js";
 
 class PartnerModel {
@@ -41,7 +43,6 @@ class PartnerModel {
 
       let fileName = null;
       if (logo) {
-        // Save base64 logo image
         const base64Data = logo.replace(/^data:image\/\w+;base64,/, "");
         const buffer = Buffer.from(base64Data, "base64");
         const extension = logo.substring(
@@ -49,13 +50,22 @@ class PartnerModel {
           logo.indexOf(";base64")
         );
         fileName = `${randomUUID()}_${Date.now()}.${extension}`;
-        const filePath = path.join(process.env.IMAGE_DIRECTORY, fileName);
 
-        await fs.promises.writeFile(filePath, buffer); // Save the file asynchronously
+        const uploadParams = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `logos/${fileName}`,
+          Body: buffer,
+          ContentType: `image/${extension}`,
+          // ACL: "public-read",
+        };
+
+        const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+
+        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
       }
 
       const newPartner = new PartnerAuthSchemaModel({
-        logo: fileName ? `${process.env.BASE_URL}/images/${fileName}` : null,
+        logo: s3LogoUrl,
         name,
         email: email.toLowerCase(),
         password: hashedPassword,
@@ -211,10 +221,63 @@ class PartnerModel {
     const { partnerid: partnerId } = data.headers;
 
     try {
+      const existingPartner = await PartnerAuthSchemaModel.findOne({
+        partnerId,
+      });
+      if (!existingPartner) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Partner not found",
+        };
+      }
+
+      // Handle logo update
+      let newLogoUrl = existingPartner.logo; // Default to the current logo
+      if (data.body.logo) {
+        // Remove the old logo from S3 if it exists
+        if (existingPartner.logo) {
+          const oldKey = existingPartner.logo.split("/").slice(-2).join("/"); // Extract the S3 key
+          const deleteParams = {
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: oldKey,
+          };
+          await s3.send(new DeleteObjectCommand(deleteParams));
+        }
+
+        // Upload the new logo to S3
+        const base64Data = data.body.logo.replace(
+          /^data:image\/\w+;base64,/,
+          ""
+        );
+        const buffer = Buffer.from(base64Data, "base64");
+        const extension = data.body.logo.substring(
+          "data:image/".length,
+          data.body.logo.indexOf(";base64")
+        );
+        const newFileName = `${randomUUID()}_${Date.now()}.${extension}`;
+
+        const uploadParams = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `logos/${newFileName}`,
+          Body: buffer,
+          ContentType: `image/${extension}`,
+          // ACL: "public-read",
+        };
+
+        const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
+      }
+
       const existingPartnerProfile =
         await PartnerAuthSchemaModel.findOneAndUpdate(
           { partnerId },
-          { ...data.body, email: data.body.email.toLowerCase() },
+          {
+            ...data.body,
+            email: data.body.email.toLowerCase(),
+            logo: newLogoUrl,
+          },
           { new: true }
         );
 
