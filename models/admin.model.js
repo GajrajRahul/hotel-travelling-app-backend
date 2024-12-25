@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs";
 import crypto, { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 import { AdminAuthSchemaModel } from "./schema/authSchema.model.js";
 import {
@@ -10,6 +11,7 @@ import {
   EmployeeQuotationSchemaModel,
   PartnerQuotationSchemaModel,
 } from "./schema/quotationSchema.model.js";
+import s3 from "../utils/AwsSdkConfig.js";
 
 class AdminModel {
   adminSignUp = async (data) => {
@@ -43,8 +45,8 @@ class AdminModel {
         .substring(2, 15)}`;
 
       let fileName = null;
+      let s3LogoUrl = null;
       if (logo) {
-        // Save base64 logo image
         const base64Data = logo.replace(/^data:image\/\w+;base64,/, "");
         const buffer = Buffer.from(base64Data, "base64");
         const extension = logo.substring(
@@ -52,15 +54,24 @@ class AdminModel {
           logo.indexOf(";base64")
         );
         fileName = `${randomUUID()}_${Date.now()}.${extension}`;
-        const filePath = path.join(process.env.IMAGE_DIRECTORY, fileName);
 
-        await fs.promises.writeFile(filePath, buffer); // Save the file asynchronously
+        const uploadParams = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `logos/${fileName}`,
+          Body: buffer,
+          ContentType: `image/${extension}`,
+          // ACL: "public-read",
+        };
+
+        const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+
+        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
       }
 
       const newAdmin = new AdminAuthSchemaModel({
-        logo: fileName ? `${process.env.BASE_URL}/images/${fileName}` : null,
+        logo: s3LogoUrl,
         name,
-        email,
+        email: email.toLowerCase(),
         password: hashedPassword,
         address,
         companyName,
@@ -352,9 +363,60 @@ class AdminModel {
     const { adminid: adminId } = data.headers;
 
     try {
+      const existingAdmin = await AdminAuthSchemaModel.findOne({ adminId });
+      if (!existingAdmin) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Admin not found",
+        };
+      }
+
+      // Handle logo update
+      let newLogoUrl = existingAdmin.logo; // Default to the current logo
+      if (data.body.logo) {
+        // Remove the old logo from S3 if it exists
+        if (existingAdmin.logo) {
+          const oldKey = existingAdmin.logo.split("/").slice(-2).join("/"); // Extract the S3 key
+          const deleteParams = {
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: oldKey,
+          };
+          await s3.send(new DeleteObjectCommand(deleteParams));
+        }
+
+        // Upload the new logo to S3
+        const base64Data = data.body.logo.replace(
+          /^data:image\/\w+;base64,/,
+          ""
+        );
+        const buffer = Buffer.from(base64Data, "base64");
+        const extension = data.body.logo.substring(
+          "data:image/".length,
+          data.body.logo.indexOf(";base64")
+        );
+        const newFileName = `${randomUUID()}_${Date.now()}.${extension}`;
+
+        const uploadParams = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `logos/${newFileName}`,
+          Body: buffer,
+          ContentType: `image/${extension}`,
+          // ACL: "public-read",
+        };
+
+        const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
+      }
+
       const existingAdminProfile = await AdminAuthSchemaModel.findOneAndUpdate(
         { adminId },
-        data.body,
+        {
+          ...data.body,
+          email: data.body.email.toLowerCase(),
+          logo: newLogoUrl,
+        },
         { new: true }
       );
 

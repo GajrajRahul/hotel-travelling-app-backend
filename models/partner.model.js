@@ -57,7 +57,7 @@ class PartnerModel {
       const newPartner = new PartnerAuthSchemaModel({
         logo: fileName ? `${process.env.BASE_URL}/images/${fileName}` : null,
         name,
-        email,
+        email: email.toLowerCase(),
         password: hashedPassword,
         address,
         companyName,
@@ -214,7 +214,7 @@ class PartnerModel {
       const existingPartnerProfile =
         await PartnerAuthSchemaModel.findOneAndUpdate(
           { partnerId },
-          data.body,
+          { ...data.body, email: data.body.email.toLowerCase() },
           { new: true }
         );
 

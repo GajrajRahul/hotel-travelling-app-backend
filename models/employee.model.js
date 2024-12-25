@@ -56,7 +56,7 @@ class EmployeeModel {
       const newEmployee = new EmployeeAuthSchemaModel({
         logo: fileName ? `${process.env.BASE_URL}/images/${fileName}` : null,
         name,
-        email,
+        email: email.toLowerCase(),
         password: hashedPassword,
         address,
         companyName,
@@ -205,7 +205,7 @@ class EmployeeModel {
       const existingEmployeeProfile =
         await EmployeeAuthSchemaModel.findOneAndUpdate(
           { employeeId },
-          data.body,
+          { ...data.body, email: data.body.email.toLowerCase() },
           { new: true }
         );
 
