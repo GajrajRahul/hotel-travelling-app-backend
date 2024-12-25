@@ -12,6 +12,7 @@ import {
   PartnerQuotationSchemaModel,
 } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/awsSdkConfig.js";
+import { compressPdf, generatePdfFromHtml } from "../utils/function.js";
 
 class AdminModel {
   adminSignUp = async (data) => {
@@ -403,7 +404,6 @@ class AdminModel {
           Key: `logos/${newFileName}`,
           Body: buffer,
           ContentType: `image/${extension}`,
-          // ACL: "public-read",
         };
 
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
@@ -452,8 +452,28 @@ class AdminModel {
         };
       }
 
+      const htmlContent = data.body.htmlContent;
+
+      // Step 1: Convert HTML to PDF
+      const pdfBuffer = await generatePdfFromHtml(htmlContent);
+
+      // Step 2: Compress the PDF
+      const compressedPdfBuffer = await compressPdf(pdfBuffer);
+
+      // Step 3: Upload to S3
+      const uploadParams = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
+        Body: compressedPdfBuffer,
+        ContentType: "application/pdf",
+      };
+
+      const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+      const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+
       const newQuotation = new AdminQuotationSchemaModel({
         ...data.body,
+        pdfUrl,
         adminId,
       });
 
