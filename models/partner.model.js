@@ -8,6 +8,7 @@ import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { PartnerAuthSchemaModel } from "./schema/authSchema.model.js";
 import { PartnerQuotationSchemaModel } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/AwsSdkConfig.js";
+
 // import { AdminNotificationSchema } from "./schema/notificationSchema.modle.js";
 
 class PartnerModel {
