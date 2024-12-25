@@ -7,7 +7,7 @@ import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 import { EmployeeAuthSchemaModel } from "./schema/authSchema.model.js";
 import { EmployeeQuotationSchemaModel } from "./schema/quotationSchema.model.js";
-import s3 from "../utils/AwsSdkConfig.js";
+import s3 from "../utils/awsSdkConfig.js";
 
 class EmployeeModel {
   employeeSignUp = async (data) => {

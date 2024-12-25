@@ -11,7 +11,7 @@ import {
   EmployeeQuotationSchemaModel,
   PartnerQuotationSchemaModel,
 } from "./schema/quotationSchema.model.js";
-import s3 from "../utils/AwsSdkConfig.js";
+import s3 from "../utils/awsSdkConfig.js";
 
 class AdminModel {
   adminSignUp = async (data) => {
