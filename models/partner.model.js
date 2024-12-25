@@ -1,6 +1,4 @@
 import bcrypt from "bcrypt";
-import path from "path";
-import fs from "fs";
 import crypto, { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
