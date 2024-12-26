@@ -10,7 +10,7 @@ export const generatePdfFromHtml = async (htmlContent) => {
   const page = await browser.newPage();
   // console.log("page: ", page);
   await page.setContent(htmlContent);
-  const pdfBuffer = await page.pdf({ format: "A4" });
+  const pdfBuffer = await page.pdf({ format: "A4", printBackground: true, });
   await browser.close();
   return pdfBuffer;
 };

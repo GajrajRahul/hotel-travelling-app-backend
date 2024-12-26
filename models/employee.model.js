@@ -8,6 +8,7 @@ import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { EmployeeAuthSchemaModel } from "./schema/authSchema.model.js";
 import { EmployeeQuotationSchemaModel } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/awsSdkConfig.js";
+import { compressPdf, generatePdfFromHtml } from "../utils/function.js";
 
 class EmployeeModel {
   employeeSignUp = async (data) => {
@@ -418,8 +419,37 @@ class EmployeeModel {
         };
       }
 
+      let htmlContent = data.body.htmlContent;
+      htmlContent = htmlContent.replaceAll("&quot;", "");
+
+      // Step 1: Convert HTML to PDF
+      // console.log(htmlContent);
+      // return {
+      //   status: false,
+      //   statusCode: 500,
+      //   data: null,
+      //   error: error.message,
+      // };
+      const pdfBuffer = await generatePdfFromHtml(htmlContent);
+
+      // Step 2: Compress the PDF
+      const compressedPdfBuffer = await compressPdf(pdfBuffer);
+
+      // Step 3: Upload to S3
+      const uploadParams = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
+        Body: compressedPdfBuffer,
+        // Body: pdfBuffer,
+        ContentType: "application/pdf",
+      };
+
+      const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+      const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+
       const newQuotation = new EmployeeQuotationSchemaModel({
         ...data.body,
+        pdfUrl,
         employeeId,
       });
 

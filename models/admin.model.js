@@ -473,6 +473,7 @@ class AdminModel {
         Bucket: process.env.S3_BUCKET_NAME,
         Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
         Body: compressedPdfBuffer,
+        // Body: pdfBuffer,
         ContentType: "application/pdf",
       };
 
