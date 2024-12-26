@@ -452,9 +452,17 @@ class AdminModel {
         };
       }
 
-      const htmlContent = data.body.htmlContent;
+      let htmlContent = data.body.htmlContent;
+      htmlContent = htmlContent.replaceAll("&quot;", "");
 
       // Step 1: Convert HTML to PDF
+      // console.log(htmlContent);
+      // return {
+      //   status: false,
+      //   statusCode: 500,
+      //   data: null,
+      //   error: error.message,
+      // };
       const pdfBuffer = await generatePdfFromHtml(htmlContent);
 
       // Step 2: Compress the PDF
