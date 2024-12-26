@@ -2,8 +2,13 @@ import { PDFDocument } from "pdf-lib";
 import puppeteer from "puppeteer";
 
 export const generatePdfFromHtml = async (htmlContent) => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    headless: true, // Ensure Puppeteer runs in headless mode
+  });
+  // console.log("browser:", browser);
   const page = await browser.newPage();
+  // console.log("page: ", page);
   await page.setContent(htmlContent);
   const pdfBuffer = await page.pdf({ format: "A4" });
   await browser.close();
