@@ -1,5 +1,5 @@
 import { PDFDocument } from "pdf-lib";
-import puppeteer from "puppeteer-core";
+import puppeteer from "puppeteer";
 
 export const generatePdfFromHtml = async (htmlContent) => {
   const browser = await puppeteer.launch();
