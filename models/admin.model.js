@@ -491,7 +491,7 @@ class AdminModel {
       return {
         status: true,
         statusCode: 200,
-        data: "Quotation saved successfully",
+        data: { link: pdfUrl, message: "Quotation saved successfully" },
         error: null,
       };
     } catch (error) {
@@ -506,49 +506,83 @@ class AdminModel {
   };
 
   updateAdminQuotation = async (data) => {
-    // const { adminid: adminId } = data.headers;
-    const { id, adminId, partnerId, employeeId } = data.body;
+    const {
+      adminid: adminId,
+      partnerid: partnerId,
+      employeeid: employeeId,
+    } = data.headers;
+    // const { id, adminId, partnerId, employeeId } = data.body;
+    const { id } = data.body;
 
     try {
-      const updatePromises = [
-        AdminQuotationSchemaModel.findOneAndUpdate(
+      let updatedQuotation = null;
+      if (adminId) {
+        updatedQuotation = await AdminQuotationSchemaModel.findOneAndUpdate(
           { _id: id, adminId },
-          { $set: data.body },
+          data.body,
           { new: true }
-        ),
-        PartnerQuotationSchemaModel.findOneAndUpdate(
-          { _id: id, partnerId },
-          { $set: data.body },
-          { new: true }
-        ),
-        EmployeeQuotationSchemaModel.findOneAndUpdate(
+        );
+      } else if (employeeId) {
+        updatedQuotation = await EmployeeQuotationSchemaModel.findOneAndUpdate(
           { _id: id, employeeId },
-          { $set: data.body },
+          data.body,
           { new: true }
-        ),
-      ];
+        );
+      } else {
+        updatedQuotation = await PartnerQuotationSchemaModel.findOneAndUpdate(
+          { _id: id, partnerId },
+          data.body,
+          { new: true }
+        );
+      }
+      // const updatePromises = [
+      //   AdminQuotationSchemaModel.findOneAndUpdate(
+      //     { _id: id, adminId },
+      //     { $set: data.body },
+      //     { new: true }
+      //   ),
+      //   PartnerQuotationSchemaModel.findOneAndUpdate(
+      //     { _id: id, partnerId },
+      //     { $set: data.body },
+      //     { new: true }
+      //   ),
+      //   EmployeeQuotationSchemaModel.findOneAndUpdate(
+      //     { _id: id, employeeId },
+      //     { $set: data.body },
+      //     { new: true }
+      //   ),
+      // ];
 
-      const updatedQuotation = await Promise.any(updatePromises);
+      // const updatedQuotation = await Promise.any(updatePromises);
 
-      return {
-        status: true,
-        statusCode: 200,
-        data: {
-          ...updatedQuotation.toObject(),
-          id: updatedQuotation._id.toString(),
-        },
-        error: null,
-      };
-    } catch (error) {
-      if (error instanceof AggregateError) {
-        // If no matching document is found in any collection
+      if (updatedQuotation) {
         return {
-          status: false,
-          statusCode: 404,
-          data: null,
-          error: "Quotation not found in any collection",
+          status: true,
+          statusCode: 200,
+          data: {
+            ...updatedQuotation.toObject(),
+            id: updatedQuotation._id.toString(),
+          },
+          error: null,
         };
       }
+
+      return {
+        status: fasle,
+        statusCode: 404,
+        data: null,
+        error: "Quptation not found",
+      };
+    } catch (error) {
+      // if (error instanceof AggregateError) {
+      //   // If no matching document is found in any collection
+      //   return {
+      //     status: false,
+      //     statusCode: 404,
+      //     data: null,
+      //     error: "Quotation not found in any collection",
+      //   };
+      // }
 
       return {
         status: false,
