@@ -58,7 +58,7 @@ partnerRouter.post(
 
 partnerRouter.put(
   "/update-quotation",
-  [partnerAuth(), validateUpsertQuotationRequest],
+  [validateUpsertQuotationRequest],
   awaitHandlerFactory(PartnerController.upsertPartnerQuotation)
 );
 

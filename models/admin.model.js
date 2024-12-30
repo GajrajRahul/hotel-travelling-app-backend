@@ -641,19 +641,19 @@ class AdminModel {
       if (!deletedQuotation) {
         deletedQuotation = await AdminQuotationSchemaModel.findOneAndDelete({
           _id: id,
-          adminId,
+          // adminId,
         });
       }
       if (!deletedQuotation) {
         deletedQuotation = await PartnerQuotationSchemaModel.findOneAndDelete({
           _id: id,
-          partnerId,
+          // partnerId,
         });
       }
       if (!deletedQuotation) {
         deletedQuotation = await EmployeeQuotationSchemaModel.findOneAndDelete({
           _id: id,
-          employeeId,
+          // employeeId,
         });
       }
 
