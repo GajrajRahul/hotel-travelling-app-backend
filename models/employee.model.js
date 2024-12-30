@@ -291,14 +291,6 @@ class EmployeeModel {
 
   employeeForgotPassword = async (data) => {
     const { email } = data;
-    if (!email) {
-      return {
-        status: false,
-        statusCode: 401,
-        data: null,
-        error: "Email is required",
-      };
-    }
 
     try {
       const employee = await EmployeeAuthSchemaModel.findOne({ email });
@@ -321,9 +313,11 @@ class EmployeeModel {
       employee.passwordResetExpires = Date.now() + 3600000; // 1 hour
       await employee.save();
 
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+      const resetLink = `${process.env.FRONTEND_URL}/reset-password/employee?token=${resetToken}`;
       const transporter = nodemailer.createTransport({
-        service: "Gmail",
+        host: "smtp.hostinger.com",
+        port: 465,
+        secure: true,
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASSWORD,
@@ -331,7 +325,7 @@ class EmployeeModel {
       });
 
       await transporter.sendMail({
-        from: '"Support" <no-reply@yourapp.com>',
+        from: process.env.EMAIL_USER,
         to: email,
         subject: "Password Reset Request",
         text: `Please click the link to reset your password: ${resetLink}`,
@@ -480,7 +474,7 @@ class EmployeeModel {
     try {
       const existingQuotation = await EmployeeQuotationSchemaModel.findOne({
         _id: id,
-        employeeId,
+        employeeId: employeeId ?? data.body.employeeId,
       });
       if (!existingQuotation) {
         return {
@@ -494,7 +488,7 @@ class EmployeeModel {
       const updatedQuotation =
         await EmployeeQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { ...others, employeeId },
+          { ...others, employeeId: employeeId ?? data.body.employeeId },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 

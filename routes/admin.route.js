@@ -5,7 +5,9 @@ import AdminController from "../controllers/admin.controller.js";
 import { adminAuth } from "../middleware/adminAuth.middleware.js";
 import {
   validateDeleteQuotation,
+  validateForgotPasswordRequest,
   validateLoginRequest,
+  validateResetPasswordRequest,
   validateSignupRequest,
   validateUpsertQuotationRequest,
 } from "../middleware/validator.middleware.js";
@@ -35,6 +37,19 @@ adminRoute.put(
   [adminAuth()],
   awaitHandlerFactory(AdminController.updateAdminProfile)
 );
+
+adminRoute.post(
+  "/forgot-password",
+  [validateForgotPasswordRequest],
+  awaitHandlerFactory(AdminController.adminForgotPassword)
+);
+
+adminRoute.post(
+  "/reset-password",
+  [validateResetPasswordRequest],
+  awaitHandlerFactory(AdminController.adminResetPassword)
+);
+
 
 // adminRoute.get(
 //   "/notifications",

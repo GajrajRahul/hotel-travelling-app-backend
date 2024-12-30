@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import crypto, { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 
 import { PartnerAuthSchemaModel } from "./schema/authSchema.model.js";
@@ -42,6 +43,7 @@ class PartnerModel {
         .substring(2, 15)}`;
 
       let fileName = null;
+      let s3LogoUrl = null;
       if (logo) {
         const base64Data = logo.replace(/^data:image\/\w+;base64,/, "");
         const buffer = Buffer.from(base64Data, "base64");
@@ -299,14 +301,6 @@ class PartnerModel {
 
   partnerForgotPassword = async (data) => {
     const { email } = data;
-    if (!email) {
-      return {
-        status: false,
-        statusCode: 401,
-        data: null,
-        error: "Email is required",
-      };
-    }
 
     try {
       const partner = await PartnerAuthSchemaModel.findOne({ email });
@@ -329,9 +323,11 @@ class PartnerModel {
       partner.passwordResetExpires = Date.now() + 3600000; // 1 hour
       await partner.save();
 
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+      const resetLink = `${process.env.FRONTEND_URL}/reset-password/partner?token=${resetToken}`;
       const transporter = nodemailer.createTransport({
-        service: "Gmail",
+        host: "smtp.hostinger.com",
+        port: 465,
+        secure: true,
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASSWORD,
@@ -339,7 +335,7 @@ class PartnerModel {
       });
 
       await transporter.sendMail({
-        from: '"Support" <no-reply@yourapp.com>',
+        from: process.env.EMAIL_USER,
         to: email,
         subject: "Password Reset Request",
         text: `Please click the link to reset your password: ${resetLink}`,
@@ -488,7 +484,7 @@ class PartnerModel {
     try {
       const existingQuotation = await PartnerQuotationSchemaModel.findOne({
         _id: id,
-        partnerId,
+        partnerId: partnerId ?? data.body.partnerId,
       });
       if (!existingQuotation) {
         return {
@@ -502,7 +498,7 @@ class PartnerModel {
       const updatedQuotation =
         await PartnerQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { ...others, partnerId },
+          { ...others, partnerId: partnerId ?? data.body.partnerId },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 

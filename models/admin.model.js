@@ -249,14 +249,6 @@ class AdminModel {
 
   adminForgotPassword = async (data) => {
     const { email } = data;
-    if (!email) {
-      return {
-        status: false,
-        statusCode: 401,
-        data: null,
-        error: "Email is required",
-      };
-    }
 
     try {
       const admin = await AdminAuthSchemaModel.findOne({ email });
@@ -279,9 +271,11 @@ class AdminModel {
       admin.passwordResetExpires = Date.now() + 3600000; // 1 hour
       await admin.save();
 
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+      const resetLink = `${process.env.FRONTEND_URL}/reset-password/admin?token=${resetToken}`;
       const transporter = nodemailer.createTransport({
-        service: "Gmail",
+        host: "smtp.hostinger.com",
+        port: 465,
+        secure: true,
         auth: {
           user: process.env.EMAIL_USER,
           pass: process.env.EMAIL_PASSWORD,
@@ -289,7 +283,7 @@ class AdminModel {
       });
 
       await transporter.sendMail({
-        from: '"Support" <no-reply@yourapp.com>',
+        from: process.env.EMAIL_USER,
         to: email,
         subject: "Password Reset Request",
         text: `Please click the link to reset your password: ${resetLink}`,

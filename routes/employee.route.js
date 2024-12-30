@@ -58,7 +58,7 @@ employeeRoute.post(
 
 employeeRoute.put(
   "/update-quotation",
-  [employeeAuth(), validateUpsertQuotationRequest],
+  [validateUpsertQuotationRequest],
   awaitHandlerFactory(EmployeeController.upsertEmployeeQuotation)
 );
 

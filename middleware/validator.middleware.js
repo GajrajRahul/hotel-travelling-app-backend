@@ -34,14 +34,14 @@ export const validateForgotPasswordRequest = [
 ];
 
 export const validateResetPasswordRequest = [
-  body("newpassword")
+  body("password")
     .notEmpty()
     .isLength({ min: 6 })
     .withMessage("New password must be at least 6 characters long"),
-  body("confirmnewpassword")
-    .notEmpty()
-    .custom((value, { req }) => value === req.body.newpassword)
-    .withMessage("Passwords do not match"),
+  // body("confirmnewpassword")
+  //   .notEmpty()
+  //   .custom((value, { req }) => value === req.body.newpassword)
+  //   .withMessage("Passwords do not match"),
   validateRequest,
 ];
 
