@@ -184,6 +184,18 @@ class EmployeeController {
       res.status(400).send({ status: false, data: null, error: error.message });
     }
   };
+
+  createTaxi = async (req, res, next) => {
+    try {
+      this.checkValidation(req);
+      const response = await AdminModel.createTaxi(req);
+
+      const { statusCode } = response;
+      res.status(statusCode).json(response);
+    } catch (error) {
+      
+    }
+  }
 }
 
 export default new EmployeeController();

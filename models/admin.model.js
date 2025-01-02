@@ -13,6 +13,7 @@ import {
 } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/awsSdkConfig.js";
 import { compressPdf, generatePdfFromHtml } from "../utils/function.js";
+import { AdminTaxiSchemaModel } from "./schema/taxiSchema.model.js";
 
 class AdminModel {
   adminSignUp = async (data) => {
@@ -685,6 +686,39 @@ class AdminModel {
         };
       }
 
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  createTaxi = async (data) => {
+    try {
+      const adminDetails = await AdminAuthSchemaModel.findOne({
+        adminId,
+      });
+      if (!adminDetails) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Admin doesn't exist",
+        };
+      }
+
+      const newTaxi = new AdminTaxiSchemaModel(data.body);
+      await newTaxi.save();
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: "Taxi created successfully",
+        error: null,
+      };
+    } catch (error) {
       return {
         status: false,
         statusCode: 500,

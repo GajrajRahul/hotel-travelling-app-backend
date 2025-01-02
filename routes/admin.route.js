@@ -87,6 +87,12 @@ adminRoute.delete(
   awaitHandlerFactory(AdminController.deleteAdminQuotation)
 );
 
+adminRoute.post(
+  "/create-taxi",
+  [adminAuth()],
+  awaitHandlerFactory(AdminController.createTaxi)
+);
+
 adminRoute.get(
   "/logout",
   [adminAuth()],
