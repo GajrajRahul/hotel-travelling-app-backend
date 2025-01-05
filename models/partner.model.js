@@ -76,6 +76,7 @@ class PartnerModel {
         mobile,
         referringAgent,
         partnerId,
+        status: "pending",
         isApproved: false,
       });
 
@@ -127,6 +128,7 @@ class PartnerModel {
         referringAgent,
         partnerId,
         isApproved,
+        status,
       } = existingPartner;
 
       const isMatch = await bcrypt.compare(password, p_password);
@@ -139,15 +141,22 @@ class PartnerModel {
         };
       }
 
-      // if (!isApproved) {
-      //   return {
-      //     status: false,
-      //     statusCode: 401,
-      //     data: null,
-      //     error:
-      //       "Hold tight! Your account awaits admin approval—confirmation coming soon!",
-      //   };
-      // }
+      if (status == "pending") {
+        return {
+          status: false,
+          statusCode: 409,
+          data: null,
+          error:
+            "Hold tight! Your account awaits admin approval—confirmation coming soon!",
+        };
+      } else if (status == "rejected") {
+        return {
+          status: false,
+          statusCode: 409,
+          data: null,
+          error: "User is blocked!",
+        };
+      }
 
       const token = jwt.sign(
         { email, name, partnerId },
