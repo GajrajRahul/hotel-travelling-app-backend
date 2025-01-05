@@ -169,6 +169,7 @@ class EmployeeModel {
           mobile,
           referringAgent,
           employeeId,
+          status,
         },
       };
 

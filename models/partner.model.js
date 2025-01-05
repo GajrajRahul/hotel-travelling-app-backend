@@ -177,6 +177,7 @@ class PartnerModel {
           mobile,
           referringAgent,
           partnerId,
+          status,
         },
       };
 

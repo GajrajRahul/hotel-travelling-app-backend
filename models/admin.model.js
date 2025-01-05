@@ -122,6 +122,7 @@ class AdminModel {
         mobile,
         referringAgent,
         adminId,
+        status,
       } = existingAdmin;
 
       const isMatch = await bcrypt.compare(password, p_password);
@@ -149,6 +150,7 @@ class AdminModel {
           mobile,
           referringAgent,
           adminId,
+          status,
         },
       };
 
