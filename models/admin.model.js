@@ -6,7 +6,11 @@ import jwt from "jsonwebtoken";
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import nodemailer from "nodemailer";
 
-import { AdminAuthSchemaModel } from "./schema/authSchema.model.js";
+import {
+  AdminAuthSchemaModel,
+  EmployeeAuthSchemaModel,
+  PartnerAuthSchemaModel,
+} from "./schema/authSchema.model.js";
 import {
   AdminQuotationSchemaModel,
   EmployeeQuotationSchemaModel,
@@ -689,6 +693,128 @@ class AdminModel {
         };
       }
 
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  fetchAllUsers = async (data) => {
+    try {
+      const [partnerUsers, employeeUsers] = await Promise.allSettled([
+        PartnerAuthSchemaModel.find({}),
+        EmployeeAuthSchemaModel.find({}),
+      ]);
+
+      const allUsers = [
+        ...(partnerUsers.status === "fulfilled"
+          ? partnerUsers.value.map((partner) => {
+              return { ...partner, role: "Partner" };
+            })
+          : []),
+        ...(employeeUsers.status === "fulfilled"
+          ? employeeUsers.value.map((employee) => {
+              return { ...employee, role: "Employee" };
+            })
+          : []),
+      ];
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: allUsers.map((user) => ({
+          ...user.toObject(),
+          id: user._id.toString(),
+        })),
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  updateUserStatus = async (data) => {
+    const { id, employeeId, partnerId, status, email } = data.body;
+
+    try {
+      let existingUser = null;
+
+      const Model = employeeId
+        ? EmployeeAuthSchemaModel
+        : partnerId
+        ? PartnerAuthSchemaModel
+        : null;
+
+      if (!Model) {
+        return {
+          status: false,
+          statusCode: 500,
+          data: null,
+          error: "Neither employeeId nor partnerId provided.",
+        };
+      }
+
+      // Find the user
+      existingUser = await Model.findOne({
+        _id: id,
+        ...(employeeId ? { employeeId } : { partnerId }),
+      });
+
+      if (!existingUser) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "User not found.",
+        };
+      }
+
+      // Update status
+      existingUser.status = status;
+      await existingUser.save();
+
+      const transporter = nodemailer.createTransport({
+        host: "smtp.hostinger.com",
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASSWORD,
+        },
+      });
+
+      await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Sign-up Status Update",
+        text: `Your status is ${
+          status == "approved" ? "Approved" : "Rejected"
+        } by the Admin`,
+        html: `Your status is <strong>${
+          status == "approved" ? "Approved" : "Rejected"
+        }</strong> by the Admin`,
+      });
+
+      if (existingUser) {
+        return {
+          status: true,
+          statusCode: 200,
+          data: {
+            ...existingUser.toObject(),
+            id: existingUser._id.toString(),
+          },
+          error: null,
+        };
+      }
+    } catch (error) {
       return {
         status: false,
         statusCode: 500,

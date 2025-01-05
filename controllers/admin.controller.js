@@ -63,10 +63,9 @@ class EmployeeController {
 
       res.status(statusCode).send(response);
     } catch (error) {
-
       res.status(400).send({ status: false, data: null, error: error.message });
     }
-  }
+  };
 
   // fetchAdminNotifications = async (req, res, next) => {
   //   try {
@@ -185,6 +184,30 @@ class EmployeeController {
     }
   };
 
+  fetchAllUsers = async (req, res, next) => {
+    try {
+      this.checkValidation(req);
+      const response = await AdminModel.fetchAllUsers(req);
+
+      const { statusCode } = response;
+      res.status(statusCode).json(response);
+    } catch (error) {
+      res.status(400).send({ status: false, data: null, error: error.message });
+    }
+  };
+
+  updateUserStatus = async (req, res, next) => {
+    try {
+      this.checkValidation(req);
+      const response = await AdminModel.updateUserStatus(req);
+
+      const { statusCode } = response;
+      res.status(statusCode).json(response);
+    } catch (error) {
+      res.status(400).send({ status: false, data: null, error: error.message });
+    }
+  };
+
   createTaxi = async (req, res, next) => {
     try {
       this.checkValidation(req);
@@ -192,10 +215,8 @@ class EmployeeController {
 
       const { statusCode } = response;
       res.status(statusCode).json(response);
-    } catch (error) {
-      
-    }
-  }
+    } catch (error) {}
+  };
 }
 
 export default new EmployeeController();

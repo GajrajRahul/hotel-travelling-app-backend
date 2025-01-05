@@ -50,7 +50,6 @@ adminRoute.post(
   awaitHandlerFactory(AdminController.adminResetPassword)
 );
 
-
 // adminRoute.get(
 //   "/notifications",
 //   [adminAuth()],
@@ -85,6 +84,18 @@ adminRoute.delete(
   "/delete-quotation",
   [adminAuth(), validateDeleteQuotation],
   awaitHandlerFactory(AdminController.deleteAdminQuotation)
+);
+
+adminRoute.get(
+  "/fetch-users",
+  [adminAuth()],
+  awaitHandlerFactory(AdminController.fetchAllUsers)
+);
+
+adminRoute.put(
+  "/update-status",
+  [adminAuth()],
+  awaitHandlerFactory(AdminController.updateUserStatus)
 );
 
 adminRoute.post(
