@@ -4,6 +4,7 @@ import fs from "fs";
 import crypto, { randomUUID } from "crypto";
 import jwt from "jsonwebtoken";
 import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import nodemailer from "nodemailer";
 
 import { AdminAuthSchemaModel } from "./schema/authSchema.model.js";
 import {
