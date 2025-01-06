@@ -518,53 +518,52 @@ class AdminModel {
 
     try {
       let updatedQuotation = null;
+      let htmlContent = data.body.htmlContent;
+      htmlContent = htmlContent.replaceAll("&quot;", "");
+
+      // Step 1: Convert HTML to PDF
+      const pdfBuffer = await generatePdfFromHtml(htmlContent);
+
+      // Step 2: Compress the PDF
+      const compressedPdfBuffer = await compressPdf(pdfBuffer);
+
+      // Step 3: Upload to S3
+      const uploadParams = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
+        Body: compressedPdfBuffer,
+        // Body: pdfBuffer,
+        ContentType: "application/pdf",
+      };
+
+      const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+      const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+
       if (adminId) {
         updatedQuotation = await AdminQuotationSchemaModel.findOneAndUpdate(
           { _id: id, adminId },
-          data.body,
+          { ...data.body, pdfUrl },
           { new: true }
         );
       } else if (employeeId) {
         updatedQuotation = await EmployeeQuotationSchemaModel.findOneAndUpdate(
           { _id: id, employeeId },
-          data.body,
+          { ...data.body, pdfUrl },
           { new: true }
         );
       } else {
         updatedQuotation = await PartnerQuotationSchemaModel.findOneAndUpdate(
           { _id: id, partnerId },
-          data.body,
+          { ...data.body, pdfUrl },
           { new: true }
         );
       }
-      // const updatePromises = [
-      //   AdminQuotationSchemaModel.findOneAndUpdate(
-      //     { _id: id, adminId },
-      //     { $set: data.body },
-      //     { new: true }
-      //   ),
-      //   PartnerQuotationSchemaModel.findOneAndUpdate(
-      //     { _id: id, partnerId },
-      //     { $set: data.body },
-      //     { new: true }
-      //   ),
-      //   EmployeeQuotationSchemaModel.findOneAndUpdate(
-      //     { _id: id, employeeId },
-      //     { $set: data.body },
-      //     { new: true }
-      //   ),
-      // ];
-
-      // const updatedQuotation = await Promise.any(updatePromises);
 
       if (updatedQuotation) {
         return {
           status: true,
           statusCode: 200,
-          data: {
-            ...updatedQuotation.toObject(),
-            id: updatedQuotation._id.toString(),
-          },
+          data: { link: pdfUrl, message: "Quotation updated successfully" },
           error: null,
         };
       }
@@ -576,16 +575,6 @@ class AdminModel {
         error: "Quptation not found",
       };
     } catch (error) {
-      // if (error instanceof AggregateError) {
-      //   // If no matching document is found in any collection
-      //   return {
-      //     status: false,
-      //     statusCode: 404,
-      //     data: null,
-      //     error: "Quotation not found in any collection",
-      //   };
-      // }
-
       return {
         status: false,
         statusCode: 500,

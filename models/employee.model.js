@@ -463,7 +463,7 @@ class EmployeeModel {
       return {
         status: true,
         statusCode: 200,
-        data: "Quotation saved successfully",
+        data: { link: pdfUrl, message: "Quotation saved successfully" },
         error: null,
       };
     } catch (error) {
@@ -483,6 +483,27 @@ class EmployeeModel {
     const { id, ...others } = data.body;
 
     try {
+      let htmlContent = data.body.htmlContent;
+      htmlContent = htmlContent.replaceAll("&quot;", "");
+
+      // Step 1: Convert HTML to PDF
+      const pdfBuffer = await generatePdfFromHtml(htmlContent);
+
+      // Step 2: Compress the PDF
+      const compressedPdfBuffer = await compressPdf(pdfBuffer);
+
+      // Step 3: Upload to S3
+      const uploadParams = {
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
+        Body: compressedPdfBuffer,
+        // Body: pdfBuffer,
+        ContentType: "application/pdf",
+      };
+
+      const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+      const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+
       const existingQuotation = await EmployeeQuotationSchemaModel.findOne({
         _id: id,
         employeeId: employeeId ?? data.body.employeeId,
@@ -499,14 +520,14 @@ class EmployeeModel {
       const updatedQuotation =
         await EmployeeQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { ...others, employeeId: employeeId ?? data.body.employeeId },
+          { ...others, employeeId: employeeId ?? data.body.employeeId, pdfUrl },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 
       return {
         status: true,
         statusCode: 200,
-        data: updatedQuotation,
+        data: { link: pdfUrl, message: "Quotation updated successfully" },
         error: null,
       };
     } catch (error) {
