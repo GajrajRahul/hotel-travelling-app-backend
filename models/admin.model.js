@@ -712,12 +712,12 @@ class AdminModel {
       const allUsers = [
         ...(partnerUsers.status === "fulfilled"
           ? partnerUsers.value.map((partner) => {
-              return { ...partner, role: "Partner" };
+              return { ...partner.toObject(), role: "Partner" };
             })
           : []),
         ...(employeeUsers.status === "fulfilled"
           ? employeeUsers.value.map((employee) => {
-              return { ...employee, role: "Employee" };
+              return { ...employee.toObject(), role: "Employee" };
             })
           : []),
       ];
@@ -726,7 +726,7 @@ class AdminModel {
         status: true,
         statusCode: 200,
         data: allUsers.map((user) => ({
-          ...user.toObject(),
+          ...user,
           id: user._id.toString(),
         })),
         error: null,
