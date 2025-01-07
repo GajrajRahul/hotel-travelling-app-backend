@@ -1,5 +1,6 @@
 import { PDFDocument } from "pdf-lib";
 import puppeteer from "puppeteer";
+import zlib from "zlib";
 
 export const generatePdfFromHtml = async (htmlContent) => {
   const browser = await puppeteer.launch({
@@ -16,7 +17,8 @@ export const generatePdfFromHtml = async (htmlContent) => {
 };
 
 export const compressPdf = async (pdfBuffer) => {
-  const pdfDoc = await PDFDocument.load(pdfBuffer);
-  const compressedPdfBuffer = await pdfDoc.save();
-  return compressedPdfBuffer;
+  // const pdfDoc = await PDFDocument.load(pdfBuffer);
+  // const compressedPdfBuffer = await pdfDoc.save();
+  const compressedBuffer = zlib.gzipSync(pdfBuffer);
+  return compressedBuffer;
 };

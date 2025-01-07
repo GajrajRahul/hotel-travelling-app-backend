@@ -136,17 +136,25 @@ class EmployeeModel {
       if (status == "pending") {
         return {
           status: false,
-          statusCode: 409,
+          statusCode: 401,
           data: null,
           error:
-            "Hold tight! Your account awaits admin approval—confirmation coming soon!",
+            // "Hold tight! Your account awaits admin approval—confirmation coming soon!",
+            "Stay tuned! Request under review.",
         };
       } else if (status == "rejected") {
         return {
           status: false,
-          statusCode: 409,
+          statusCode: 401,
           data: null,
-          error: "User is blocked!",
+          error: "Oops! Admin rejected your signup",
+        };
+      } else if (status == "blocked") {
+        return {
+          status: false,
+          statusCode: 401,
+          data: null,
+          error: "Uh-oh! Your account is blocked.",
         };
       }
 
