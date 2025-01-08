@@ -108,10 +108,29 @@ export const validateUpsertQuotationRequest = [
   body("transportInfo.vehicleType")
     .notEmpty()
     .withMessage("Vehicle type is required"),
-  body("transportInfo.from")
+  // body("transportInfo.from")
+  //   .notEmpty()
+  //   .withMessage("From location is required"),
+  // body("transportInfo.to").notEmpty().withMessage("To location is required"),
+  // body("transportInfo.to").notEmpty().withMessage("To location is required"),
+  body("transportInfo.from.place")
     .notEmpty()
-    .withMessage("From location is required"),
-  body("transportInfo.to").notEmpty().withMessage("To location is required"),
+    .withMessage("Place is required"),
+  body("transportInfo.from.city")
+    .notEmpty()
+    .withMessage("City is required"),
+  body("transportInfo.from.state")
+    .notEmpty()
+    .withMessage("State is required"),
+  body("transportInfo.to.place")
+    .notEmpty()
+    .withMessage("Place is required"),
+  body("transportInfo.to.city")
+    .notEmpty()
+    .withMessage("City is required"),
+  body("transportInfo.to.state")
+    .notEmpty()
+    .withMessage("State is required"),
 
   validateRequest,
 ];

@@ -36,11 +36,20 @@ const CitySchema = new mongoose.Schema({
   hotelInfo: { type: [HotelInfoSchema], required: true },
 });
 
+const LocationSchema = new mongoose.Schema({
+  place: { type: String, required: true },
+  city: { type: String, required: true },
+  state: { type: String, required: true },
+});
+
 const TransportInfoSchema = new mongoose.Schema({
   vehicleType: { type: String, required: true },
-  from: { type: String, required: true },
-  checkpoints: { type: [String], default: [] },
-  to: { type: String, required: true },
+  // from: { type: String, required: true },
+  from: { type: LocationSchema, required: true },
+  // checkpoints: { type: [String], default: [] },
+  checkpoints: { type: [LocationSchema], default: [] },
+  // to: { type: String, required: true },
+  to: { type: LocationSchema, required: true },
   transportStartDate: { type: Date, required: true },
   transportEndDate: { type: Date, required: true },
 });
