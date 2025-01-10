@@ -833,7 +833,7 @@ class AdminModel {
         };
       }
 
-      const newTaxi = new AdminTaxiSchemaModel(data.body);
+      const newTaxi = new AdminTaxiSchemaModel({ ...data.body, adminId });
       await newTaxi.save();
 
       return {
@@ -860,15 +860,23 @@ class AdminModel {
       ]);
 
       const allTaxisData = [
-        ...(adminTaxis.status === "fulfilled" ? adminTaxis.value : []),
-        ...(partnerTaxis.status === "fulfilled" ? partnerTaxis.value : []),
+        ...(adminTaxis.status === "fulfilled"
+          ? adminTaxis.value.map((admin) => {
+              return { ...admin.toObject(), role: "Admin" };
+            })
+          : []),
+        ...(partnerTaxis.status === "fulfilled"
+          ? partnerTaxis.value.map((partner) => {
+              return { ...partner.toObject(), role: "Partner" };
+            })
+          : []),
       ];
 
       return {
         status: true,
         statusCode: 200,
         data: allTaxisData.map((taxiData) => ({
-          ...taxiData.toObject(),
+          ...taxiData,
           id: taxiData._id.toString(),
         })),
         error: null,

@@ -638,7 +638,7 @@ class PartnerModel {
         };
       }
 
-      const newTaxi = new PartnerTaxiSchemaModel(data.body);
+      const newTaxi = new PartnerTaxiSchemaModel({ ...data.body, partnerId });
       await newTaxi.save();
 
       return {

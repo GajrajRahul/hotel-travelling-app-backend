@@ -83,7 +83,7 @@ partnerRouter.post(
 partnerRouter.get(
   "/fetch-taxis",
   [partnerAuth()],
-  awaitHandlerFactory(PartnerController.fatchTaxis)
+  awaitHandlerFactory(PartnerController.fetchTaxis)
 );
 
 partnerRouter.get(

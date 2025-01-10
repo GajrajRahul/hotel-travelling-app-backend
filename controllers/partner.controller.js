@@ -167,7 +167,7 @@ class PartnerController {
     } catch (error) {}
   };
 
-  fetchPartnerTaxis = async (req, res, next) => {
+  fetchTaxis = async (req, res, next) => {
     try {
       this.checkValidation(req);
       const response = await PartnerModel.fetchPartnerTaxis(req);
