@@ -74,6 +74,18 @@ employeeRoute.delete(
   awaitHandlerFactory(EmployeeController.deleteEmployeeQuotation)
 );
 
+employeeRoute.post(
+  "/create-taxi",
+  [employeeAuth()],
+  awaitHandlerFactory(EmployeeController.createTaxi)
+);
+
+employeeRoute.get(
+  "/fetch-taxis",
+  [employeeAuth()],
+  awaitHandlerFactory(EmployeeController.fatchTaxis)
+);
+
 employeeRoute.get(
   "/logout",
   [employeeAuth()],

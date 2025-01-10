@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-import { adminDBConnection } from "../../db/db-connection.js";
+import { adminDBConnection, partnerDBConnection, employeeDBConnection } from "../../db/db-connection.js";
 
 const LocationSchema = new mongoose.Schema({
   place: { type: String, required: true },
@@ -21,8 +21,8 @@ const TaxiSchema = new mongoose.Schema({
 
 const AdminTaxiSchemaModel = adminDBConnection.model("Taxi", TaxiSchema);
 
-const EmployeeTaxiSchemaModel = adminDBConnection.model("Taxi", TaxiSchema);
+const EmployeeTaxiSchemaModel = employeeDBConnection.model("Taxi", TaxiSchema);
 
-const PartnerTaxiSchemaModel = adminDBConnection.model("Taxi", TaxiSchema);
+const PartnerTaxiSchemaModel = partnerDBConnection.model("Taxi", TaxiSchema);
 
 export { AdminTaxiSchemaModel, EmployeeTaxiSchemaModel, PartnerTaxiSchemaModel };

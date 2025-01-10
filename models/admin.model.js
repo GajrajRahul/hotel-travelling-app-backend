@@ -18,7 +18,11 @@ import {
 } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/awsSdkConfig.js";
 import { compressPdf, generatePdfFromHtml } from "../utils/function.js";
-import { AdminTaxiSchemaModel } from "./schema/taxiSchema.model.js";
+import {
+  AdminTaxiSchemaModel,
+  EmployeeTaxiSchemaModel,
+  PartnerTaxiSchemaModel,
+} from "./schema/taxiSchema.model.js";
 
 class AdminModel {
   adminSignUp = async (data) => {
@@ -814,6 +818,8 @@ class AdminModel {
   };
 
   createTaxi = async (data) => {
+    const { adminid: adminId } = data.headers;
+
     try {
       const adminDetails = await AdminAuthSchemaModel.findOne({
         adminId,
@@ -833,7 +839,38 @@ class AdminModel {
       return {
         status: true,
         statusCode: 200,
-        data: "Taxi created successfully",
+        data: "Saved Sccessfully",
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  fatchTaxis = async () => {
+    try {
+      const [adminTaxis, partnerTaxis] = await Promise.allSettled([
+        AdminTaxiSchemaModel.find({}),
+        PartnerTaxiSchemaModel.find({}),
+      ]);
+
+      const allTaxisData = [
+        ...(adminTaxis.status === "fulfilled" ? adminTaxis.value : []),
+        ...(partnerTaxis.status === "fulfilled" ? partnerTaxis.value : []),
+      ];
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: allTaxisData.map((taxiData) => ({
+          ...taxiData.toObject(),
+          id: taxiData._id.toString(),
+        })),
         error: null,
       };
     } catch (error) {

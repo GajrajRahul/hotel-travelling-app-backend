@@ -105,6 +105,12 @@ adminRoute.post(
 );
 
 adminRoute.get(
+  "/fetch-taxis",
+  // [adminAuth()],
+  awaitHandlerFactory(AdminController.fatchTaxis)
+);
+
+adminRoute.get(
   "/logout",
   [adminAuth()],
   awaitHandlerFactory(AdminController.adminLogout)

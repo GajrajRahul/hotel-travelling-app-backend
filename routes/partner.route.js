@@ -74,6 +74,18 @@ partnerRouter.delete(
   awaitHandlerFactory(PartnerController.deletePartnerQuotation)
 );
 
+partnerRouter.post(
+  "/create-taxi",
+  [partnerAuth()],
+  awaitHandlerFactory(PartnerController.createTaxi)
+);
+
+partnerRouter.get(
+  "/fetch-taxis",
+  [partnerAuth()],
+  awaitHandlerFactory(PartnerController.fatchTaxis)
+);
+
 partnerRouter.get(
   "/logout",
   [partnerAuth()],

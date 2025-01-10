@@ -8,6 +8,7 @@ import { PartnerAuthSchemaModel } from "./schema/authSchema.model.js";
 import { PartnerQuotationSchemaModel } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/awsSdkConfig.js";
 import { compressPdf, generatePdfFromHtml } from "../utils/function.js";
+import { PartnerTaxiSchemaModel } from "./schema/taxiSchema.model.js";
 
 // import { AdminNotificationSchema } from "./schema/notificationSchema.modle.js";
 
@@ -464,7 +465,7 @@ class PartnerModel {
         Body: compressedPdfBuffer,
         // Body: pdfBuffer,
         ContentType: "application/pdf",
-        ContentEncoding: 'gzip',
+        ContentEncoding: "gzip",
       };
 
       const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
@@ -609,6 +610,80 @@ class PartnerModel {
         status: true,
         statusCode: 200,
         data: existingQuotations,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  createTaxi = async (data) => {
+    const { partnerid: partnerId } = data.headers;
+
+    try {
+      const partnerDetails = await PartnerAuthSchemaModel.findOne({
+        partnerId,
+      });
+      if (!partnerDetails) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Partner doesn't exist",
+        };
+      }
+
+      const newTaxi = new PartnerTaxiSchemaModel(data.body);
+      await newTaxi.save();
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: "Saved Sccessfully",
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  fetchPartnerTaxis = async (data) => {
+    const { partnerid: partnerId } = data.headers;
+
+    try {
+      const partnerDetails = await PartnerAuthSchemaModel.findOne({
+        partnerId,
+      });
+      if (!partnerDetails) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Partner doesn't exist",
+        };
+      }
+
+      const existingTaxis = await PartnerTaxiSchemaModel.find({
+        partnerId,
+      });
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: existingTaxis.map((taxis) => ({
+          ...taxis.toObject(),
+          id: taxis._id.toString(),
+        })),
         error: null,
       };
     } catch (error) {

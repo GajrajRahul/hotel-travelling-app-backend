@@ -2,7 +2,7 @@ import { validationResult } from "express-validator";
 import crypto from "crypto";
 
 import HttpException from "../utils/HttpException.utils.js";
-import EmployeeModel from "../models/employee.model.js"
+import EmployeeModel from "../models/employee.model.js";
 import { EmployeeAuthSchemaModel } from "../models/schema/authSchema.model.js";
 
 class EmployeeController {
@@ -54,18 +54,17 @@ class EmployeeController {
   };
 
   updateEmployeeProfile = async (req, res, next) => {
-      try {
-        this.checkValidation(req);
-        const response = await EmployeeModel.updateEmployeeProfile(req);
-  
-        const { statusCode } = response;
-  
-        res.status(statusCode).send(response);
-      } catch (error) {
-  
-        res.status(400).send({ status: false, data: null, error: error.message });
-      }
+    try {
+      this.checkValidation(req);
+      const response = await EmployeeModel.updateEmployeeProfile(req);
+
+      const { statusCode } = response;
+
+      res.status(statusCode).send(response);
+    } catch (error) {
+      res.status(400).send({ status: false, data: null, error: error.message });
     }
+  };
 
   employeeForgotPassword = async (req, res, next) => {
     try {
@@ -150,6 +149,28 @@ class EmployeeController {
     try {
       this.checkValidation(req);
       const response = await EmployeeModel.deleteEmployeeQuotation(req);
+
+      const { statusCode } = response;
+      res.status(statusCode).json(response);
+    } catch (error) {
+      res.status(400).send({ status: false, data: null, error: error.message });
+    }
+  };
+
+  createTaxi = async (req, res, next) => {
+    try {
+      this.checkValidation(req);
+      const response = await EmployeeModel.createEmployeeTaxi(req);
+
+      const { statusCode } = response;
+      res.status(statusCode).json(response);
+    } catch (error) {}
+  };
+
+  fetchEmployeeTaxis = async (req, res, next) => {
+    try {
+      this.checkValidation(req);
+      const response = await EmployeeModel.fetchEmployeeTaxis(req);
 
       const { statusCode } = response;
       res.status(statusCode).json(response);

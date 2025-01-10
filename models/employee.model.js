@@ -10,6 +10,7 @@ import { EmployeeAuthSchemaModel } from "./schema/authSchema.model.js";
 import { EmployeeQuotationSchemaModel } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/awsSdkConfig.js";
 import { compressPdf, generatePdfFromHtml } from "../utils/function.js";
+import { EmployeeTaxiSchemaModel } from "./schema/taxiSchema.model.js";
 
 class EmployeeModel {
   employeeSignUp = async (data) => {
@@ -599,6 +600,80 @@ class EmployeeModel {
         status: true,
         statusCode: 200,
         data: existingQuotations,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  createEmployeeTaxi = async (data) => {
+    const { employeeid: employeeId } = data.headers;
+
+    try {
+      const employeeDetails = await EmployeeAuthSchemaModel.findOne({
+        employeeId,
+      });
+      if (!employeeDetails) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Employee doesn't exist",
+        };
+      }
+
+      const newTaxi = new EmployeeTaxiSchemaModel(data.body);
+      await newTaxi.save();
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: "Saved Sccessfully",
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  fetchEmployeeTaxis = async (data) => {
+    const { employeeid: employeeId } = data.headers;
+
+    try {
+      const employeeDetails = await EmployeeAuthSchemaModel.findOne({
+        employeeId,
+      });
+      if (!employeeDetails) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Employee doesn't exist",
+        };
+      }
+
+      const existingTaxis = await EmployeeTaxiSchemaModel.find({
+        employeeId,
+      });
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: existingTaxis.map((taxis) => ({
+          ...taxis.toObject(),
+          id: taxis._id.toString(),
+        })),
         error: null,
       };
     } catch (error) {
