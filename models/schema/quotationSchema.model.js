@@ -46,6 +46,7 @@ const TransportInfoSchema = new mongoose.Schema({
   vehicleType: { type: String, required: true },
   // from: { type: String, required: true },
   from: { type: LocationSchema, required: true },
+  isLocal: { type: Boolean },
   // checkpoints: { type: [String], default: [] },
   checkpoints: { type: [LocationSchema], default: [] },
   // to: { type: String, required: true },
