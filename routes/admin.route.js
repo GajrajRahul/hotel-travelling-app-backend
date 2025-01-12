@@ -106,8 +106,14 @@ adminRoute.post(
 
 adminRoute.get(
   "/fetch-taxis",
-  // [adminAuth()],
+  [adminAuth()],
   awaitHandlerFactory(AdminController.fatchTaxis)
+);
+
+adminRoute.post(
+  "/fetch-taxi",
+  [adminAuth()],
+  awaitHandlerFactory(AdminController.fetchTaxiData)
 );
 
 adminRoute.get(

@@ -890,6 +890,48 @@ class AdminModel {
       };
     }
   };
+
+  fetchTaxiData = async (data) => {
+    const { adminId, partnerId, taxiId } = data.body;
+
+    try {
+      if (!taxiId) {
+        return {
+          status: false,
+          statusCode: 400,
+          data: null,
+          error: "Taxi id is required",
+        };
+      }
+
+      const existingTaxiData = adminId
+        ? await AdminTaxiSchemaModel.findOne({ _id: taxiId, adminId })
+        : await PartnerTaxiSchemaModel.findOne({ _id: taxiId, partnerId });
+
+      if (!existingTaxiData) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Taxi data not found",
+        };
+      }
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: existingTaxiData,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
 }
 
 export default new AdminModel();

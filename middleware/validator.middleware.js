@@ -116,21 +116,21 @@ export const validateUpsertQuotationRequest = [
   body("transportInfo.from.place")
     .notEmpty()
     .withMessage("Place is required"),
-  body("transportInfo.from.city")
-    .notEmpty()
-    .withMessage("City is required"),
-  body("transportInfo.from.state")
-    .notEmpty()
-    .withMessage("State is required"),
+  // body("transportInfo.from.city")
+  //   .notEmpty()
+  //   .withMessage("City is required"),
+  // body("transportInfo.from.state")
+  //   .notEmpty()
+  //   .withMessage("State is required"),
   body("transportInfo.to.place")
     .notEmpty()
     .withMessage("Place is required"),
-  body("transportInfo.to.city")
-    .notEmpty()
-    .withMessage("City is required"),
-  body("transportInfo.to.state")
-    .notEmpty()
-    .withMessage("State is required"),
+  // body("transportInfo.to.city")
+  //   .notEmpty()
+  //   .withMessage("City is required"),
+  // body("transportInfo.to.state")
+  //   .notEmpty()
+  //   .withMessage("State is required"),
 
   validateRequest,
 ];
