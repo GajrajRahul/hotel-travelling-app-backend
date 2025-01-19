@@ -67,32 +67,6 @@ class EmployeeController {
     }
   };
 
-  // fetchAdminNotifications = async (req, res, next) => {
-  //   try {
-  //     this.checkValidation(req);
-  //     const response = await AdminModel.fetchAdminNotifications(req);
-
-  //     const { statusCode } = response;
-
-  //     res.status(statusCode).send(response);
-  //   } catch (error) {
-  //     res.status(400).send({ status: false, data: null, error: error.message });
-  //   }
-  // };
-
-  // approveRegistration = async (req, res, next) => {
-  //   try {
-  //     this.checkValidation(req);
-  //     const response = await AdminModel.approveRegistration(req);
-
-  //     const { statusCode } = response;
-
-  //     res.status(statusCode).send(response);
-  //   } catch (error) {
-  //     res.status(400).send({ status: false, data: null, error: error.message });
-  //   }
-  // }
-
   adminForgotPassword = async (req, res, next) => {
     try {
       this.checkValidation(req);
@@ -234,6 +208,30 @@ class EmployeeController {
     try {
       this.checkValidation(req);
       const response = await AdminModel.fetchTaxiData(req);
+
+      const { statusCode } = response;
+      res.status(statusCode).json(response);
+    } catch (error) {
+      res.status(400).send({ status: false, data: null, error: error.message });
+    }
+  };
+
+  fetchNotifications = async (req, res, next) => {
+    try {
+      this.checkValidation(req);
+      const response = await AdminModel.fetchNotifications(req);
+
+      const { statusCode } = response;
+      res.status(statusCode).json(response);
+    } catch (error) {
+      res.status(400).send({ status: false, data: null, error: error.message });
+    }
+  };
+
+  updateNotificationStatus = async (req, res, next) => {
+    try {
+      this.checkValidation(req);
+      const response = await AdminModel.updateNotificationStatus(req.body);
 
       const { statusCode } = response;
       res.status(statusCode).json(response);

@@ -87,6 +87,18 @@ partnerRouter.get(
 );
 
 partnerRouter.get(
+  "/fetch-notifications",
+  [partnerAuth()],
+  awaitHandlerFactory(PartnerController.fetchNotifications)
+);
+
+partnerRouter.put(
+  "/update-notification-status",
+  [partnerAuth()],
+  awaitHandlerFactory(PartnerController.updateNotificationStatus)
+);
+
+partnerRouter.get(
   "/logout",
   [partnerAuth()],
   awaitHandlerFactory(PartnerController.partnerLogout)

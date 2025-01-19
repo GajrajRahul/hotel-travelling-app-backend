@@ -87,6 +87,18 @@ employeeRoute.get(
 );
 
 employeeRoute.get(
+  "/fetch-notifications",
+  [employeeAuth()],
+  awaitHandlerFactory(EmployeeController.fetchNotifications)
+);
+
+employeeRoute.put(
+  "/update-notification-status",
+  [employeeAuth()],
+  awaitHandlerFactory(EmployeeController.updateNotificationStatus)
+);
+
+employeeRoute.get(
   "/logout",
   [employeeAuth()],
   awaitHandlerFactory(EmployeeController.employeeLogout)

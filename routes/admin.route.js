@@ -50,18 +50,6 @@ adminRoute.post(
   awaitHandlerFactory(AdminController.adminResetPassword)
 );
 
-// adminRoute.get(
-//   "/notifications",
-//   [adminAuth()],
-//   awaitHandlerFactory(AdminController.fetchAdminNotifications)
-// );
-
-// adminRoute.put(
-//   "/approve-registration",
-//   [adminAuth()],
-//   awaitHandlerFactory(AdminController.approveRegistration)
-// );
-
 adminRoute.post(
   "/create-quotation",
   [adminAuth(), validateUpsertQuotationRequest],
@@ -114,6 +102,18 @@ adminRoute.post(
   "/fetch-taxi",
   [adminAuth()],
   awaitHandlerFactory(AdminController.fetchTaxiData)
+);
+
+adminRoute.get(
+  "/fetch-notifications",
+  [adminAuth()],
+  awaitHandlerFactory(AdminController.fetchNotifications)
+);
+
+adminRoute.put(
+  "/update-notification-status",
+  [adminAuth()],
+  awaitHandlerFactory(AdminController.updateNotificationStatus)
 );
 
 adminRoute.get(

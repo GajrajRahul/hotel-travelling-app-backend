@@ -11,6 +11,11 @@ import { EmployeeQuotationSchemaModel } from "./schema/quotationSchema.model.js"
 import s3 from "../utils/awsSdkConfig.js";
 import { compressPdf, generatePdfFromHtml } from "../utils/function.js";
 import { EmployeeTaxiSchemaModel } from "./schema/taxiSchema.model.js";
+import {
+  AdminNotificationSchema,
+  EmployeeNotificationSchema,
+} from "./schema/notificationSchema.modle.js";
+import { getIOInstance } from "../socket.js";
 
 class EmployeeModel {
   employeeSignUp = async (data) => {
@@ -72,6 +77,7 @@ class EmployeeModel {
         name,
         email: email.toLowerCase(),
         password: hashedPassword,
+        originalPassword: password,
         address,
         companyName,
         mobile,
@@ -82,6 +88,41 @@ class EmployeeModel {
       });
 
       await newEmployee.save();
+
+      const createdAt = Date.now();
+
+      const notification = new AdminNotificationSchema({
+        userId: employeeId,
+        type: "signup",
+        title: "New Signup Alert!",
+        description: `${name} has joined the platform and is ready to explore! Review their request now.`,
+        logo,
+        name,
+        email: email.toLowerCase(),
+        createdAt,
+      });
+
+      const savedNotification = await notification.save();
+
+      try {
+        getIOInstance()
+          .to("admins")
+          .emit("signup", {
+            userId: employeeId,
+            title: "New Signup Alert!",
+            description: `${name} has joined the platform and is ready to explore! Review their request now.`,
+            type: "signup",
+            logo,
+            notificationId: savedNotification._id.toString(),
+            name,
+            email: email.toLowerCase(),
+            createdAt,
+            status: "pending",
+          });
+      } catch (err) {
+        // console.log(err);
+        // console.error("Socket.io not initialized. Cannot emit event.");
+      }
 
       return {
         status: true,
@@ -128,7 +169,7 @@ class EmployeeModel {
       if (!isMatch) {
         return {
           status: false,
-          statusCode: 401,
+          statusCode: 409,
           data: null,
           error: "Invalid username or password",
         };
@@ -137,7 +178,7 @@ class EmployeeModel {
       if (status == "pending") {
         return {
           status: false,
-          statusCode: 401,
+          statusCode: 409,
           data: null,
           error:
             // "Hold tight! Your account awaits admin approval—confirmation coming soon!",
@@ -146,14 +187,14 @@ class EmployeeModel {
       } else if (status == "rejected") {
         return {
           status: false,
-          statusCode: 401,
+          statusCode: 409,
           data: null,
           error: "Oops! Admin rejected your signup",
         };
       } else if (status == "blocked") {
         return {
           status: false,
-          statusCode: 401,
+          statusCode: 409,
           data: null,
           error: "Uh-oh! Your account is blocked.",
         };
@@ -396,6 +437,7 @@ class EmployeeModel {
       // Update the user's password
       const hashedPassword = await bcrypt.hash(password, 10);
       employee.password = hashedPassword;
+      employee.originalPassword = password;
       employee.passwordResetToken = undefined; // Clear the token
       employee.passwordResetExpires = undefined; // Clear the expiration
       await employee.save();
@@ -467,7 +509,49 @@ class EmployeeModel {
         employeeId,
       });
 
-      await newQuotation.save();
+      const savedQuotation = await newQuotation.save();
+
+      const { quotationName, status } = data.body;
+      if (status == "pending") {
+        const { logo, name } = employeeDetails;
+        const createdAt = Date.now();
+
+        const notification = new AdminNotificationSchema({
+          userId: employeeId,
+          type: "quotation",
+          title: "Itinerary Approval Needed!",
+          description: `${name} Awaits Your Feedback on ${quotationName} Itinerary.`,
+          quotationId: savedQuotation._id.toString(),
+          quotationName,
+          logo,
+          name,
+          createdAt,
+          status: "pending",
+        });
+
+        const savedNotification = await notification.save();
+
+        try {
+          getIOInstance()
+            .to("admins")
+            .emit("quotation", {
+              userId: employeeId,
+              title: "Itinerary Approval Needed!",
+              description: `${name} Awaits Your Feedback on ${quotationName} Itinerary.`,
+              quotationName,
+              notificationId: savedNotification._id.toString(),
+              quotationId: savedQuotation._id.toString(),
+              logo,
+              name,
+              createdAt,
+              type: "quotation",
+              status: "pending",
+            });
+        } catch (err) {
+          // console.log(err);
+          // console.error("Socket.io not initialized. Cannot emit event.");
+        }
+      }
 
       return {
         status: true,
@@ -492,6 +576,18 @@ class EmployeeModel {
     const { id, ...others } = data.body;
 
     try {
+      const employeeDetails = await EmployeeAuthSchemaModel.findOne({
+        employeeId,
+      });
+      if (!employeeDetails) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Employee doesn't exist",
+        };
+      }
+
       let htmlContent = data.body.htmlContent;
       htmlContent = htmlContent.replaceAll("&quot;", "");
 
@@ -532,6 +628,50 @@ class EmployeeModel {
           { ...others, employeeId: employeeId ?? data.body.employeeId, pdfUrl },
           { new: true, runValidators: true } // new: true to return the updated document
         );
+
+      const { quotationName, status } = data.body;
+      if (status == "approved" || status == "rejected") {
+        const title =
+          status == "approved" ? "Itinerary Approved!" : "Itinerary Rejected!";
+        const description =
+          status == "approved"
+            ? `Great news! Your ${quotationName} Itinerary  has been approved by the admin.`
+            : `Your ${quotationName} Itinerary has been reviewed and edited by the admin`;
+
+        const createdAt = Date.now();
+
+        const notification = new EmployeeNotificationSchema({
+          userId: employeeId,
+          type: "quotation",
+          title,
+          name: "Admin",
+          quotationName,
+          quotationId: updatedQuotation._id.toString(),
+          description,
+          createdAt,
+          status,
+        });
+
+        const savedNotification = await notification.save();
+
+        try {
+          getIOInstance().to(employeeId).emit("quotation", {
+            userId: employeeId,
+            title,
+            name: "Admin",
+            type: "quotation",
+            quotationName,
+            notificationId: savedNotification._id.toString(),
+            quotationId: updatedQuotation._id.toString(),
+            description,
+            createdAt,
+            status,
+          });
+        } catch (err) {
+          // console.log("err in employee update quotation", err);
+          // console.error("Socket.io not initialized. Cannot emit event.");
+        }
+      }
 
       return {
         status: true,
@@ -682,6 +822,60 @@ class EmployeeModel {
         statusCode: 500,
         data: null,
         error: error.message,
+      };
+    }
+  };
+
+  fetchNotifications = async (data) => {
+    const { employeeid: employeeId } = data.headers;
+
+    try {
+      const notifications = await EmployeeNotificationSchema.find({
+        userId: employeeId,
+        isRead: false,
+      }).sort({
+        timestamp: -1,
+      });
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: notifications.map((notification) => ({
+          ...notification.toObject(),
+          id: notification._id.toString(),
+        })),
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  updateNotificationStatus = async (data) => {
+    try {
+      const notification = await EmployeeNotificationSchema.findByIdAndUpdate(
+        data.id,
+        { isRead: true },
+        { new: true }
+      );
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: notification,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: "Something went wrong",
       };
     }
   };

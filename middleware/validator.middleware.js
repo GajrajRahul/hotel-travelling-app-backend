@@ -18,7 +18,7 @@ export const validateSignupRequest = [
   // body("logo").notEmpty().withMessage("Logo is required"),
   body("companyName").notEmpty().withMessage("Company Name is required"),
   body("mobile").notEmpty().withMessage("Mobile Number is required"),
-  body("referringAgent").notEmpty().withMessage("Referring Agent is required"),
+  // body("referringAgent").notEmpty().withMessage("Referring Agent is required"),
   validateRequest,
 ];
 

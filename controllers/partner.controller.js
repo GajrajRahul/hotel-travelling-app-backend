@@ -178,6 +178,30 @@ class PartnerController {
       res.status(400).send({ status: false, data: null, error: error.message });
     }
   };
+
+  fetchNotifications = async (req, res, next) => {
+      try {
+        this.checkValidation(req);
+        const response = await PartnerModel.fetchNotifications(req);
+  
+        const { statusCode } = response;
+        res.status(statusCode).json(response);
+      } catch (error) {
+        res.status(400).send({ status: false, data: null, error: error.message });
+      }
+    };
+  
+    updateNotificationStatus = async (req, res, next) => {
+      try {
+        this.checkValidation(req);
+        const response = await PartnerModel.updateNotificationStatus(req.body);
+  
+        const { statusCode } = response;
+        res.status(statusCode).json(response);
+      } catch (error) {
+        res.status(400).send({ status: false, data: null, error: error.message });
+      }
+    };
 }
 
 export default new PartnerController();

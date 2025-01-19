@@ -9,6 +9,11 @@ import { PartnerQuotationSchemaModel } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/awsSdkConfig.js";
 import { compressPdf, generatePdfFromHtml } from "../utils/function.js";
 import { PartnerTaxiSchemaModel } from "./schema/taxiSchema.model.js";
+import {
+  AdminNotificationSchema,
+  PartnerNotificationSchema,
+} from "./schema/notificationSchema.modle.js";
+import { getIOInstance } from "../socket.js";
 
 // import { AdminNotificationSchema } from "./schema/notificationSchema.modle.js";
 
@@ -72,6 +77,7 @@ class PartnerModel {
         name,
         email: email.toLowerCase(),
         password: hashedPassword,
+        originalPassword: password,
         address,
         companyName,
         mobile,
@@ -83,13 +89,40 @@ class PartnerModel {
 
       await newPartner.save();
 
-      // const newNotification = new AdminNotificationSchema({
-      //   message: `New partner signup: ${name}`,
-      //   email,
-      //   partnerId,
-      // });
+      const createdAt = Date.now();
 
-      // await newNotification.save();
+      const notification = new AdminNotificationSchema({
+        userId: partnerId,
+        type: "signup",
+        title: "New Signup Alert!",
+        description: `${name} has joined the platform and is ready to explore! Review their request now.`,
+        logo,
+        name,
+        email: email.toLowerCase(),
+        createdAt,
+      });
+
+      const savedNotification  = await notification.save();
+
+      try {
+        getIOInstance()
+          .to("admins")
+          .emit("signup", {
+            userId: partnerId,
+            title: "New Signup Alert!",
+            description: `${name} has joined the platform and is ready to explore! Review their request now.`,
+            logo,
+            name,
+            email: email.toLowerCase(),
+            notificationId: savedNotification._id.toString(),
+            createdAt,
+            type: "signup",
+            status: "pending",
+          });
+      } catch (err) {
+        // console.log(err);
+        // console.error("Socket.io not initialized. Cannot emit event.");
+      }
 
       return {
         status: true,
@@ -98,7 +131,7 @@ class PartnerModel {
         error: null,
       };
     } catch (error) {
-      console.error("Error during partnerSignUp:", error);
+      // console.error("Error during partnerSignUp:", error);
       return { status: false, data: null, error, statusCode: 500 };
     }
   };
@@ -136,7 +169,7 @@ class PartnerModel {
       if (!isMatch) {
         return {
           status: false,
-          statusCode: 401,
+          statusCode: 409,
           data: null,
           error: "Invalid username or password",
         };
@@ -145,7 +178,7 @@ class PartnerModel {
       if (status == "pending") {
         return {
           status: false,
-          statusCode: 401,
+          statusCode: 409,
           data: null,
           error:
             // "Hold tight! Your account awaits admin approval—confirmation coming soon!",
@@ -154,14 +187,14 @@ class PartnerModel {
       } else if (status == "rejected") {
         return {
           status: false,
-          statusCode: 401,
+          statusCode: 409,
           data: null,
           error: "Oops! Admin rejected your signup",
         };
       } else if (status == "blocked") {
         return {
           status: false,
-          statusCode: 401,
+          statusCode: 409,
           data: null,
           error: "Uh-oh! Your account is blocked.",
         };
@@ -342,7 +375,8 @@ class PartnerModel {
       partner.passwordResetExpires = Date.now() + 3600000; // 1 hour
       await partner.save();
 
-      const resetLink = `${process.env.FRONTEND_URL}/reset-password/partner?token=${resetToken}`;
+      // const resetLink = `${process.env.FRONTEND_URL}/reset-password/partner?token=${resetToken}`;
+      const resetLink = `http://localhost:3000/reset-password/partner?token=${resetToken}`;
       const transporter = nodemailer.createTransport({
         host: "smtp.hostinger.com",
         port: 465,
@@ -405,6 +439,7 @@ class PartnerModel {
       // Update the user's password
       const hashedPassword = await bcrypt.hash(password, 10);
       partner.password = hashedPassword;
+      partner.originalPassword = password;
       partner.passwordResetToken = undefined; // Clear the token
       partner.passwordResetExpires = undefined; // Clear the expiration
       await partner.save();
@@ -477,7 +512,49 @@ class PartnerModel {
         partnerId,
       });
 
-      await newQuotation.save();
+      const savedQuotation = await newQuotation.save();
+
+      const { quotationName, status } = data.body;
+      if (status == "pending") {
+        const { logo, name } = partnerDetails;
+        const createdAt = Date.now();
+
+        const notification = new AdminNotificationSchema({
+          userId: partnerId,
+          type: "quotation",
+          title: "Itinerary Approval Needed!",
+          description: `${name} Awaits Your Feedback on ${quotationName} Itinerary.`,
+          logo,
+          name,
+          quotationName,
+          quotationId: savedQuotation._id.toString(),
+          createdAt,
+          status: "pending",
+        });
+
+        const savedNotification = await notification.save();
+
+        try {
+          getIOInstance()
+            .to("admins")
+            .emit("quotation", {
+              userId: partnerId,
+              title: "Itinerary Approval Needed!",
+              description: `${name} Awaits Your Feedback on ${quotationName} Itinerary.`,
+              logo,
+              name,
+              quotationName,
+              quotationId: savedQuotation._id.toString(),
+              notificationId: savedNotification._id.toString(),
+              createdAt,
+              type: "quotation",
+              status: "pending",
+            });
+        } catch (err) {
+          // console.log("err in partner create quotation", err);
+          // console.error("Socket.io not initialized. Cannot emit event.");
+        }
+      }
 
       return {
         status: true,
@@ -542,6 +619,50 @@ class PartnerModel {
           { ...others, partnerId: partnerId ?? data.body.partnerId, pdfUrl },
           { new: true, runValidators: true } // new: true to return the updated document
         );
+
+      const { quotationName, status } = data.body;
+      if (status == "approved" || status == "rejected") {
+        const title =
+          status == "approved" ? "Itinerary Approved!" : "Itinerary Rejected!";
+        const description =
+          status == "approved"
+            ? `Great news! Your ${quotationName} Itinerary  has been approved by the admin.`
+            : `Your ${quotationName} Itinerary has been reviewed and edited by the admin`;
+
+        const createdAt = Date.now();
+
+        const notification = new PartnerNotificationSchema({
+          userId: partnerId,
+          type: "quotation",
+          title,
+          name: "Admin",
+          quotationName,
+          quotationId: updatedQuotation._id.toString(),
+          description,
+          createdAt,
+          status,
+        });
+
+        const savedNotification = await notification.save();
+
+        try {
+          getIOInstance().to(partnerId).emit("quotation", {
+            userId: partnerId,
+            title,
+            name: "Admin",
+            type: "quotation",
+            quotationName,
+            notificationId: savedNotification._id.toString(),
+            quotationId: updatedQuotation._id.toString(),
+            description,
+            createdAt,
+            status,
+          });
+        } catch (err) {
+          // console.log("err in partner update quotation", err);
+          // console.error("Socket.io not initialized. Cannot emit event.");
+        }
+      }
 
       return {
         status: true,
@@ -692,6 +813,60 @@ class PartnerModel {
         statusCode: 500,
         data: null,
         error: error.message,
+      };
+    }
+  };
+
+  fetchNotifications = async (data) => {
+    const { partnerid: partnerId } = data.headers;
+
+    try {
+      const notifications = await PartnerNotificationSchema.find({
+        userId: partnerId,
+        isRead: false,
+      }).sort({
+        timestamp: -1,
+      });
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: notifications.map((notification) => ({
+          ...notification.toObject(),
+          id: notification._id.toString(),
+        })),
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  updateNotificationStatus = async (data) => {
+    try {
+      const notification = await PartnerNotificationSchema.findByIdAndUpdate(
+        data.id,
+        { isRead: true },
+        { new: true }
+      );
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: notification,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: "Something went wrong",
       };
     }
   };

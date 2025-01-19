@@ -23,6 +23,11 @@ import {
   EmployeeTaxiSchemaModel,
   PartnerTaxiSchemaModel,
 } from "./schema/taxiSchema.model.js";
+import {
+  AdminNotificationSchema,
+  EmployeeNotificationSchema,
+  PartnerNotificationSchema,
+} from "./schema/notificationSchema.modle.js";
 
 class AdminModel {
   adminSignUp = async (data) => {
@@ -84,6 +89,7 @@ class AdminModel {
         name,
         email: email.toLowerCase(),
         password: hashedPassword,
+        originalPassword: password,
         address,
         companyName,
         mobile,
@@ -210,55 +216,6 @@ class AdminModel {
     }
   };
 
-  // fetchAdminNotifications = async (data) => {
-  //   try {
-  //     const notifications = await AdminNotificationSchema.find().sort({
-  //       timestamp: -1,
-  //     }); // Sort by most recent
-  //     // .populate("partnerId", "name email"); // Optionally populate partner details
-
-  //     return {
-  //       status: true,
-  //       statusCode: 200,
-  //       data: notifications,
-  //       error: false,
-  //     };
-  //   } catch (error) {
-  //     return {
-  //       status: false,
-  //       statusCode: 500,
-  //       data: null,
-  //       error: "Something went wrong",
-  //     };
-  //   }
-  // };
-
-  // approveRegistration = async (data) => {
-  //   try {
-  //     const { partnerId, isApproved } = data.body;
-
-  //     // Update the isApproved flag in the partner database
-  //     const updatedPartner = await PartnerModel.findByIdAndUpdate(
-  //       partnerId,
-  //       { isApproved },
-  //       { new: true }
-  //     );
-
-  //     if (!updatedPartner) {
-  //       return res.status(404).json({ error: "Partner not found." });
-  //     }
-
-  //     res
-  //       .status(200)
-  //       .json({
-  //         message: "Partner approved successfully.",
-  //         partner: updatedPartner,
-  //       });
-  //   } catch (error) {
-  //     res.status(500).json({ error: "Error approving partner." });
-  //   }
-  // };
-
   adminForgotPassword = async (data) => {
     const { email } = data;
 
@@ -346,6 +303,7 @@ class AdminModel {
       // Update the user's password
       const hashedPassword = await bcrypt.hash(password, 10);
       admin.password = hashedPassword;
+      admin.originalPassword = password;
       admin.passwordResetToken = undefined; // Clear the token
       admin.passwordResetExpires = undefined; // Clear the expiration
       await admin.save();
@@ -462,13 +420,6 @@ class AdminModel {
       htmlContent = htmlContent.replaceAll("&quot;", "");
 
       // Step 1: Convert HTML to PDF
-      // console.log(htmlContent);
-      // return {
-      //   status: false,
-      //   statusCode: 500,
-      //   data: null,
-      //   error: error.message,
-      // };
       const pdfBuffer = await generatePdfFromHtml(htmlContent);
 
       // Step 2: Compress the PDF
@@ -501,7 +452,6 @@ class AdminModel {
         error: null,
       };
     } catch (error) {
-      // console.log(error);
       return {
         status: false,
         statusCode: 500,
@@ -929,6 +879,58 @@ class AdminModel {
         statusCode: 500,
         data: null,
         error: error.message,
+      };
+    }
+  };
+
+  fetchNotifications = async (data) => {
+    try {
+      const notifications = await AdminNotificationSchema.find({
+        isRead: false,
+      }).sort({
+        timestamp: -1,
+      });
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: notifications.map((notification) => ({
+          ...notification.toObject(),
+          notificationId: notification._id.toString(),
+          id: notification._id.toString(),
+        })),
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: "Something went wrong",
+      };
+    }
+  };
+
+  updateNotificationStatus = async (data) => {
+    try {
+      const notification = await AdminNotificationSchema.findByIdAndUpdate(
+        data.id,
+        { isRead: true },
+        { new: true }
+      );
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: notification,
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: "Something went wrong",
       };
     }
   };

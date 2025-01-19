@@ -1,12 +1,22 @@
 import mongoose from "mongoose";
-import { adminDBConnection } from "../../db/db-connection.js";
+import {
+  adminDBConnection,
+  employeeDBConnection,
+  partnerDBConnection,
+} from "../../db/db-connection.js";
 
 const NotificationSchema = new mongoose.Schema({
-  message: { type: String, required: true },
-  email: { type: String, required: true },
-  partnerId: { type: String, ref: "Partner", required: true },
-  timestamp: { type: Date, default: Date.now },
-  isRead: { type: Boolean, default: false }, // Default to unread
+  userId: { type: String, ref: "User", required: true },
+  type: { type: String, enum: ["signup", "quotation"], required: true },
+  title: { type: String, required: true },
+  description: { type: String },
+  logo: { type: String },
+  name: { type: String },
+  quotationName: { type: String },
+  quotationId: { type: String },
+  email: { type: String },
+  isRead: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }, // Default to unread
 });
 
 // const NotificationModel = mongoose.model('Notification', NotificationSchema);
@@ -16,4 +26,16 @@ const AdminNotificationSchema = adminDBConnection.model(
   "Notification",
   NotificationSchema
 );
-export { AdminNotificationSchema };
+const PartnerNotificationSchema = partnerDBConnection.model(
+  "Notification",
+  NotificationSchema
+);
+const EmployeeNotificationSchema = employeeDBConnection.model(
+  "Notification",
+  NotificationSchema
+);
+export {
+  AdminNotificationSchema,
+  PartnerNotificationSchema,
+  EmployeeNotificationSchema,
+};

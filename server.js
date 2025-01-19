@@ -1,4 +1,5 @@
 import express from "express";
+import http from "http";
 import dotenv from "dotenv";
 import cors from "cors";
 
@@ -6,6 +7,7 @@ import partnerRouter from "./routes/partner.route.js";
 import adminRouter from "./routes/admin.route.js";
 import employeeRouter from "./routes/employee.route.js";
 import HttpException from "./utils/HttpException.utils.js";
+import { initializeSocket } from "./socket.js";
 
 dotenv.config();
 
@@ -13,16 +15,12 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 // connectDB();
 
+const server = http.createServer(app);
+
+initializeSocket(server);
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-// app.use(
-//   cors({
-//     origin: ["https://crm.adventurerichaholidays.com"], // Add your frontend domain
-//     methods: ["GET", "POST", "PUT", "DELETE"],
-//     credentials: true,
-//   })
-// );
 
 // enabling cors for all requests by using cors middleware
 app.use(cors());
@@ -42,6 +40,10 @@ app.all("*", (req, res, next) => {
   next(err);
 });
 
-app.listen(PORT, () => {
-  console.log(`App listining at port: ${PORT}`);
+// app.listen(PORT, () => {
+//   console.log(`App listining at port: ${PORT}`);
+// });
+
+server.listen(PORT, () => {
+  console.log(`App listening on port: ${PORT}`);
 });
