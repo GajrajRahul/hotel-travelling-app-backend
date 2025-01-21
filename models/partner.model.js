@@ -375,8 +375,8 @@ class PartnerModel {
       partner.passwordResetExpires = Date.now() + 3600000; // 1 hour
       await partner.save();
 
-      // const resetLink = `${process.env.FRONTEND_URL}/reset-password/partner?token=${resetToken}`;
-      const resetLink = `http://localhost:3000/reset-password/partner?token=${resetToken}`;
+      const resetLink = `${process.env.FRONTEND_URL}/reset-password/partner?token=${resetToken}`;
+      // const resetLink = `http://localhost:3000/reset-password/partner?token=${resetToken}`;
       const transporter = nodemailer.createTransport({
         host: "smtp.hostinger.com",
         port: 465,
