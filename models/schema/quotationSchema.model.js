@@ -38,7 +38,7 @@ const CitySchema = new mongoose.Schema({
 
 const LocationSchema = new mongoose.Schema({
   place: { type: String, required: true },
-  city: { type: String, required: true },
+  city: { type: String },
   state: { type: String, required: true },
 });
 
