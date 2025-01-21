@@ -19,6 +19,7 @@ export const generatePdfFromHtml = async (htmlContent) => {
 export const compressPdf = async (pdfBuffer) => {
   const pdfDoc = await PDFDocument.load(pdfBuffer);
   const compressedPdfBuffer = await pdfDoc.save();
+  return compressedPdfBuffer;
   // const compressedBuffer = zlib.gzipSync(pdfBuffer);
   // return compressedBuffer;
 };
