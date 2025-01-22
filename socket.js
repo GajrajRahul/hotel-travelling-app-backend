@@ -9,6 +9,7 @@ export const initializeSocket = (server) => {
       origin: "*",
       methods: ["GET", "POST"],
     },
+    path: "/socket.io",
   });
 
   io.on("connection", (socket) => {
