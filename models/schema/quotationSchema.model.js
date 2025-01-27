@@ -5,29 +5,25 @@ import {
   partnerDBConnection,
 } from "../../db/db-connection.js";
 
-const RoomTypeInfo = new mongoose.Schema({
-  roomName: { type: String, required: true },
-  roomCount: { type: String, required: true },
+const RoomsInfo = new mongoose.Schema({
+  name: { type: String, required: true },
+  count: { type: String, required: true },
 });
 
 const HotelInfoSchema = new mongoose.Schema({
   id: { type: Number, default: 0 },
-  hotelName: { type: String, required: true },
-  hotelType: { type: String, required: true },
-  hotelImage: { type: String },
+  name: { type: String, required: true },
+  type: { type: String, required: true },
+  image: { type: String },
   checkIn: { type: Date, required: true },
   checkOut: { type: Date, required: true },
-  isBreakfast: { type: Boolean, default: false },
-  isLunch: { type: Boolean, default: false },
-  isDinner: { type: Boolean, default: false },
-  rooms: { type: Number, required: true },
-  // roomType: { type: [String], required: true },
-  roomType: { type: [RoomTypeInfo], required: true },
+  meals: { type: [String], default: [] },
+  rooms: { type: [RoomsInfo], required: true },
+  rooms: { type: [Number], required: true },
   adult: { type: Number, required: true },
   child: { type: Number, default: 0 },
+  infant: { type: Number, default: 0 },
   extraBed: { type: Number, default: 0 },
-  price: { type: String },
-  image: { type: String },
 });
 
 const CitySchema = new mongoose.Schema({
@@ -70,13 +66,11 @@ const QuotationSchema = new mongoose.Schema(
       type: TransportInfoSchema,
       required: true,
     },
-    adminId: { type: String },
-    employeeId: { type: String },
-    partnerId: { type: String },
+    userId: { type: String, required: true },
     totalAmount: { type: String },
     userName: { type: String },
     companyName: { type: String },
-    status: { type: String, default: 'draft' },
+    status: { type: String, default: "draft" },
     pdfUrl: { type: String },
   },
   { timestamps: true }

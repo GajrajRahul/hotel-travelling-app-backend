@@ -509,7 +509,7 @@ class PartnerModel {
       const newQuotation = new PartnerQuotationSchemaModel({
         ...data.body,
         pdfUrl,
-        partnerId,
+        userId: partnerId,
       });
 
       const savedQuotation = await newQuotation.save();
@@ -616,7 +616,7 @@ class PartnerModel {
       const updatedQuotation =
         await PartnerQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { ...others, partnerId: partnerId ?? data.body.partnerId, pdfUrl },
+          { ...others, userId: partnerId ?? data.body.partnerId, pdfUrl },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 

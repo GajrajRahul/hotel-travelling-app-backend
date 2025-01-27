@@ -440,7 +440,7 @@ class AdminModel {
       const newQuotation = new AdminQuotationSchemaModel({
         ...data.body,
         pdfUrl,
-        adminId,
+        userId: adminId,
       });
 
       await newQuotation.save();
@@ -495,19 +495,19 @@ class AdminModel {
 
       if (adminId) {
         updatedQuotation = await AdminQuotationSchemaModel.findOneAndUpdate(
-          { _id: id, adminId },
+          { _id: id, userId: adminId },
           { ...data.body, pdfUrl },
           { new: true }
         );
       } else if (employeeId) {
         updatedQuotation = await EmployeeQuotationSchemaModel.findOneAndUpdate(
-          { _id: id, employeeId },
+          { _id: id, userId: employeeId },
           { ...data.body, pdfUrl },
           { new: true }
         );
       } else {
         updatedQuotation = await PartnerQuotationSchemaModel.findOneAndUpdate(
-          { _id: id, partnerId },
+          { _id: id, userId: partnerId },
           { ...data.body, pdfUrl },
           { new: true }
         );

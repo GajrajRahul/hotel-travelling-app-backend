@@ -506,7 +506,7 @@ class EmployeeModel {
       const newQuotation = new EmployeeQuotationSchemaModel({
         ...data.body,
         pdfUrl,
-        employeeId,
+        userId: employeeId,
       });
 
       const savedQuotation = await newQuotation.save();
@@ -625,7 +625,7 @@ class EmployeeModel {
       const updatedQuotation =
         await EmployeeQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { ...others, employeeId: employeeId ?? data.body.employeeId, pdfUrl },
+          { ...others, userId: employeeId ?? data.body.employeeId, pdfUrl },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 

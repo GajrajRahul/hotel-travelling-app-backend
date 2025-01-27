@@ -80,18 +80,15 @@ export const validateUpsertQuotationRequest = [
     body("citiesHotelsInfo.cities.*.hotelInfo")
     .isArray({ min: 1 })
     .withMessage("Minimum 1 hotel is required"),
-  body("citiesHotelsInfo.cities.*.hotelInfo.*.hotelName")
+  body("citiesHotelsInfo.cities.*.hotelInfo.*.name")
     .notEmpty()
     .withMessage("Hotel name is required"),
-  body("citiesHotelsInfo.cities.*.hotelInfo.*.hotelType")
+  body("citiesHotelsInfo.cities.*.hotelInfo.*.type")
     .notEmpty()
     .withMessage("Hotel type is required"),
   body("citiesHotelsInfo.cities.*.hotelInfo.*.rooms")
-    .isInt({ gt: 0 })
-    .withMessage("Minimum 1 room is required"),
-  body("citiesHotelsInfo.cities.*.hotelInfo.*.roomType")
     .isArray({ min: 1 })
-    .withMessage("Minimum 1 room type is required"),
+    .withMessage("Minimum 1 room is required"),
   body("citiesHotelsInfo.cities.*.hotelInfo.*.adult")
     .isInt({ gt: 0 })
     .withMessage("Minimum 1 person is required"),
