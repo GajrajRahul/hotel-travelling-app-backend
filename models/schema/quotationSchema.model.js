@@ -19,7 +19,7 @@ const HotelInfoSchema = new mongoose.Schema({
   checkOut: { type: Date, required: true },
   meals: { type: [String], default: [] },
   rooms: { type: [RoomsInfo], required: true },
-  rooms: { type: [Number], required: true },
+  roomsPrice: { type: [Number], required: true },
   adult: { type: Number, required: true },
   child: { type: Number, default: 0 },
   infant: { type: Number, default: 0 },
