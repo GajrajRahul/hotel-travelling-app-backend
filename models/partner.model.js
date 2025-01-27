@@ -602,7 +602,7 @@ class PartnerModel {
 
       const existingQuotation = await PartnerQuotationSchemaModel.findOne({
         _id: id,
-        partnerId: partnerId ?? data.body.partnerId,
+        userId: partnerId ?? data.body.partnerId,
       });
       if (!existingQuotation) {
         return {
@@ -685,7 +685,7 @@ class PartnerModel {
 
     try {
       const existingQuotations = await PartnerQuotationSchemaModel.find({
-        partnerId,
+        userId: partnerId,
       });
 
       return {

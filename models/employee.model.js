@@ -694,7 +694,7 @@ class EmployeeModel {
 
     try {
       const existingQuotations = await EmployeeQuotationSchemaModel.find({
-        employeeId,
+        userId: employeeId,
       });
 
       return {
