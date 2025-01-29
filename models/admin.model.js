@@ -17,7 +17,7 @@ import {
   PartnerQuotationSchemaModel,
 } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/awsSdkConfig.js";
-import { compressPdf, generatePdfFromHtml } from "../utils/function.js";
+import { compressPdf, generatePdfFromHtml, getForgotPasswordHTML } from "../utils/function.js";
 import {
   AdminTaxiSchemaModel,
   EmployeeTaxiSchemaModel,
@@ -256,7 +256,8 @@ class AdminModel {
         to: email,
         subject: "Password Reset Request",
         text: `Please click the link to reset your password: ${resetLink}`,
-        html: `<a href="${resetLink}">Reset Password</a>`,
+        // html: `<a href="${resetLink}">Reset Password</a>`,
+        html: getForgotPasswordHTML(resetLink),
       });
 
       return {

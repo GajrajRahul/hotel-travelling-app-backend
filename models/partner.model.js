@@ -7,7 +7,11 @@ import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { PartnerAuthSchemaModel } from "./schema/authSchema.model.js";
 import { PartnerQuotationSchemaModel } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/awsSdkConfig.js";
-import { compressPdf, generatePdfFromHtml } from "../utils/function.js";
+import {
+  compressPdf,
+  generatePdfFromHtml,
+  getForgotPasswordHTML,
+} from "../utils/function.js";
 import { PartnerTaxiSchemaModel } from "./schema/taxiSchema.model.js";
 import {
   AdminNotificationSchema,
@@ -102,7 +106,7 @@ class PartnerModel {
         createdAt,
       });
 
-      const savedNotification  = await notification.save();
+      const savedNotification = await notification.save();
 
       try {
         getIOInstance()
@@ -392,7 +396,8 @@ class PartnerModel {
         to: email,
         subject: "Password Reset Request",
         text: `Please click the link to reset your password: ${resetLink}`,
-        html: `<a href="${resetLink}">Reset Password</a>`,
+        // html: `<a href="${resetLink}">Reset Password</a>`,
+        html: getForgotPasswordHTML(resetLink),
       });
 
       return {

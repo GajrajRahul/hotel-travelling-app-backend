@@ -9,7 +9,11 @@ import nodemailer from "nodemailer";
 import { EmployeeAuthSchemaModel } from "./schema/authSchema.model.js";
 import { EmployeeQuotationSchemaModel } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/awsSdkConfig.js";
-import { compressPdf, generatePdfFromHtml } from "../utils/function.js";
+import {
+  compressPdf,
+  generatePdfFromHtml,
+  getForgotPasswordHTML,
+} from "../utils/function.js";
 import { EmployeeTaxiSchemaModel } from "./schema/taxiSchema.model.js";
 import {
   AdminNotificationSchema,
@@ -390,7 +394,8 @@ class EmployeeModel {
         to: email,
         subject: "Password Reset Request",
         text: `Please click the link to reset your password: ${resetLink}`,
-        html: `<a href="${resetLink}">Reset Password</a>`,
+        // html: `<a href="${resetLink}">Reset Password</a>`,
+        html: getForgotPasswordHTML(resetLink),
       });
 
       return {
