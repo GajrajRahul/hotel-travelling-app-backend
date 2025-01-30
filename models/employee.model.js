@@ -73,7 +73,8 @@ class EmployeeModel {
 
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
 
-        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
+        // s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
+        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3-website.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
       }
 
       const newEmployee = new EmployeeAuthSchemaModel({
@@ -324,7 +325,8 @@ class EmployeeModel {
         };
 
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
-        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
+        // newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
+        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3-website.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
       }
 
       const existingEmployeeProfile =
@@ -392,7 +394,7 @@ class EmployeeModel {
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
-        subject: "Password Reset Request",
+        subject: "Reset Password Request | Adventure Richa Holidays",
         text: `Please click the link to reset your password: ${resetLink}`,
         // html: `<a href="${resetLink}">Reset Password</a>`,
         html: getForgotPasswordHTML(resetLink),
@@ -506,7 +508,8 @@ class EmployeeModel {
       };
 
       const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
-      const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+      // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+      const pdfUrl = `https://${uploadParams.Bucket}.s3-website.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
 
       const newQuotation = new EmployeeQuotationSchemaModel({
         ...data.body,
@@ -612,7 +615,8 @@ class EmployeeModel {
       };
 
       const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
-      const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+      // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+      const pdfUrl = `https://${uploadParams.Bucket}.s3-website.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
 
       const existingQuotation = await EmployeeQuotationSchemaModel.findOne({
         _id: id,

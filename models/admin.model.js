@@ -17,7 +17,14 @@ import {
   PartnerQuotationSchemaModel,
 } from "./schema/quotationSchema.model.js";
 import s3 from "../utils/awsSdkConfig.js";
-import { compressPdf, generatePdfFromHtml, getForgotPasswordHTML } from "../utils/function.js";
+import {
+  compressPdf,
+  generatePdfFromHtml,
+  getBlockedSignupHTML,
+  getForgotPasswordHTML,
+  getRejectedSignupHTML,
+  getSuccessSignupHTML,
+} from "../utils/function.js";
 import {
   AdminTaxiSchemaModel,
   EmployeeTaxiSchemaModel,
@@ -81,7 +88,8 @@ class AdminModel {
 
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
 
-        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
+        // s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
+        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3-website.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
       }
 
       const newAdmin = new AdminAuthSchemaModel({
@@ -254,7 +262,7 @@ class AdminModel {
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
-        subject: "Password Reset Request",
+        subject: "Reset Password Request | Adventure Richa Holidays",
         text: `Please click the link to reset your password: ${resetLink}`,
         // html: `<a href="${resetLink}">Reset Password</a>`,
         html: getForgotPasswordHTML(resetLink),
@@ -372,7 +380,8 @@ class AdminModel {
         };
 
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
-        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
+        // newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
+        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3-website.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
       }
 
       const existingAdminProfile = await AdminAuthSchemaModel.findOneAndUpdate(
@@ -436,7 +445,8 @@ class AdminModel {
       };
 
       const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
-      const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+      // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+      const pdfUrl = `https://${uploadParams.Bucket}.s3-website.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
 
       const newQuotation = new AdminQuotationSchemaModel({
         ...data.body,
@@ -492,7 +502,8 @@ class AdminModel {
       };
 
       const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
-      const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+      // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+      const pdfUrl = `https://${uploadParams.Bucket}.s3-website.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
 
       if (adminId) {
         updatedQuotation = await AdminQuotationSchemaModel.findOneAndUpdate(
@@ -738,13 +749,21 @@ class AdminModel {
       await transporter.sendMail({
         from: process.env.EMAIL_USER,
         to: email,
-        subject: "Sign-up Status Update",
+        subject:
+          status == "approved"
+            ? "Signup Approved | Welcome to Adventure Richa Holidays"
+            : status == "rejected"
+            ? "Signup Rejected | Adventure Richa Holidays"
+            : "Account Unblocked | Adventure Richa Holidays",
         text: `Your status is ${
-          status == "approved" ? "Approved" : "Rejected"
+          status == "approved" ? "Approved" : status == "rejected" ? "Rejected" : "Blocked"
         } by the Admin`,
-        html: `Your status is <strong>${
-          status == "approved" ? "Approved" : "Rejected"
-        }</strong> by the Admin`,
+        html:
+          status == "approved"
+            ? getSuccessSignupHTML()
+            : status == "rejected"
+            ? getRejectedSignupHTML()
+            : getBlockedSignupHTML(),
       });
 
       if (existingUser) {
