@@ -567,7 +567,7 @@ class PartnerModel {
       return {
         status: true,
         statusCode: 200,
-        data: { link: pdfUrl, message: "Quotation saved successfully" },
+        data: { link: pdfUrl, message: "Quotation saved successfully", id: savedQuotation._id.toString() },
         error: null,
       };
     } catch (error) {
@@ -676,7 +676,7 @@ class PartnerModel {
       return {
         status: true,
         statusCode: 200,
-        data: { link: pdfUrl, message: "Quotation updated successfully" },
+        data: { link: pdfUrl, message: "Quotation updated successfully", id },
         error: null,
       };
     } catch (error) {
