@@ -89,7 +89,7 @@ class AdminModel {
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
 
         // s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
-        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3-website.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
+        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}/${fileName}`;
       }
 
       const newAdmin = new AdminAuthSchemaModel({
@@ -381,7 +381,7 @@ class AdminModel {
 
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
         // newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
-        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3-website.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
+        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}/${newFileName}`;
       }
 
       const existingAdminProfile = await AdminAuthSchemaModel.findOneAndUpdate(
@@ -446,7 +446,7 @@ class AdminModel {
 
       const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
       // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
-      const pdfUrl = `https://${uploadParams.Bucket}.s3-website.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
+      const pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
 
       const newQuotation = new AdminQuotationSchemaModel({
         ...data.body,
@@ -503,7 +503,7 @@ class AdminModel {
 
       const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
       // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
-      const pdfUrl = `https://${uploadParams.Bucket}.s3-website.${process.env.AWS_REGION}.amazonaws.com/${uploadParams.Key}`;
+      const pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
 
       if (adminId) {
         updatedQuotation = await AdminQuotationSchemaModel.findOneAndUpdate(

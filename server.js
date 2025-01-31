@@ -9,6 +9,7 @@ import employeeRouter from "./routes/employee.route.js";
 import HttpException from "./utils/HttpException.utils.js";
 import { initializeSocket } from "./socket.js";
 import task from "./cron/notification-cron.js";
+import userRoute from "./routes/user.route.js";
 
 dotenv.config();
 
@@ -22,14 +23,15 @@ initializeSocket(server);
 
 task.start();
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // enabling cors for all requests by using cors middleware
 app.use(cors());
 // Enable pre-flight
 app.options("*", cors());
 
+app.use("/api/user", userRoute);
 app.use("/api/admin", adminRouter);
 app.use("/api/partner", partnerRouter);
 app.use("/api/employee", employeeRouter);

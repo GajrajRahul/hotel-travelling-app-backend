@@ -1,5 +1,4 @@
 import { validationResult } from "express-validator";
-import crypto from "crypto";
 
 import HttpException from "../utils/HttpException.utils.js";
 import AdminModel from "../models/admin.model.js";
