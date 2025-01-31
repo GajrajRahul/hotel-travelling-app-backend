@@ -72,6 +72,8 @@ const QuotationSchema = new mongoose.Schema(
     companyName: { type: String },
     status: { type: String, default: "draft" },
     pdfUrl: { type: String },
+    view: { type: Number, default: 0 },
+    download: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
