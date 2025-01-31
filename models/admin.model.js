@@ -89,7 +89,7 @@ class AdminModel {
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
 
         // s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
-        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}/${fileName}`;
+        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}/${uploadParams.Key}`;
       }
 
       const newAdmin = new AdminAuthSchemaModel({
@@ -381,7 +381,7 @@ class AdminModel {
 
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
         // newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
-        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}/${newFileName}`;
+        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}/${uploadParams.Key}`;
       }
 
       const existingAdminProfile = await AdminAuthSchemaModel.findOneAndUpdate(
@@ -756,7 +756,11 @@ class AdminModel {
             ? "Signup Rejected | Adventure Richa Holidays"
             : "Account Unblocked | Adventure Richa Holidays",
         text: `Your status is ${
-          status == "approved" ? "Approved" : status == "rejected" ? "Rejected" : "Blocked"
+          status == "approved"
+            ? "Approved"
+            : status == "rejected"
+            ? "Rejected"
+            : "Blocked"
         } by the Admin`,
         html:
           status == "approved"

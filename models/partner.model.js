@@ -74,7 +74,7 @@ class PartnerModel {
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
 
         // s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
-        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}/${fileName}`;
+        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}/${uploadParams.Key}`;
       }
 
       const newPartner = new PartnerAuthSchemaModel({
@@ -327,7 +327,7 @@ class PartnerModel {
 
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
         // newLogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${newFileName}`;
-        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}/${newFileName}`;
+        newLogoUrl = `https://${process.env.S3_BUCKET_NAME}/${uploadParams.Key}`;
       }
 
       const existingPartnerProfile =
