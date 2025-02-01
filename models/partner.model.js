@@ -639,6 +639,7 @@ class PartnerModel {
             ...others,
             userId: partnerId ?? data.body.partnerId,
             pdfUrl: pdfUrl.length > 0 ? pdfUrl : existingQuotation.pdfUrl,
+            comment: data.body.comment || existingQuotation.comment || ''
           },
           { new: true, runValidators: true } // new: true to return the updated document
         );
@@ -738,7 +739,7 @@ class PartnerModel {
       const existingQuotations =
         await PartnerQuotationSchemaModel.findOneAndDelete({
           _id: id,
-          partnerId,
+          userId: partnerId,
         });
 
       if (!existingQuotations) {

@@ -648,6 +648,7 @@ class EmployeeModel {
             ...others,
             userId: employeeId ?? data.body.employeeId,
             pdfUrl: pdfUrl.length > 0 ? pdfUrl : existingQuotation.pdfUrl,
+            comment: data.body.comment || existingQuotation.comment || ''
           },
           { new: true, runValidators: true } // new: true to return the updated document
         );
@@ -747,7 +748,7 @@ class EmployeeModel {
       const existingQuotations =
         await EmployeeQuotationSchemaModel.findOneAndDelete({
           _id: id,
-          employeeId,
+          userId: employeeId,
         });
 
       if (!existingQuotations) {

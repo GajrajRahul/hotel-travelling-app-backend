@@ -74,6 +74,7 @@ const QuotationSchema = new mongoose.Schema(
     pdfUrl: { type: String },
     view: { type: Number, default: 0 },
     download: { type: Number, default: 0 },
+    comment: { type: String },
   },
   { timestamps: true }
 );
