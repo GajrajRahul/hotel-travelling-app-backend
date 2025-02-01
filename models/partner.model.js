@@ -495,24 +495,27 @@ class PartnerModel {
       //   data: null,
       //   error: error.message,
       // };
-      const pdfBuffer = await generatePdfFromHtml(htmlContent);
+      let pdfUrl = "";
+      if (data.body.willGenerateNewPdf) {
+        const pdfBuffer = await generatePdfFromHtml(htmlContent);
 
-      // Step 2: Compress the PDF
-      const compressedPdfBuffer = await compressPdf(pdfBuffer);
+        // Step 2: Compress the PDF
+        const compressedPdfBuffer = await compressPdf(pdfBuffer);
 
-      // Step 3: Upload to S3
-      const uploadParams = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
-        Body: compressedPdfBuffer,
-        // Body: pdfBuffer,
-        ContentType: "application/pdf",
-        ContentEncoding: "gzip",
-      };
+        // Step 3: Upload to S3
+        const uploadParams = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
+          Body: compressedPdfBuffer,
+          // Body: pdfBuffer,
+          ContentType: "application/pdf",
+          ContentEncoding: "gzip",
+        };
 
-      const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
-      // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
-      const pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
+        const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+        // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+        pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
+      }
 
       const newQuotation = new PartnerQuotationSchemaModel({
         ...data.body,
@@ -605,7 +608,7 @@ class PartnerModel {
       }
 
       let pdfUrl = "";
-      if (data.body.htmlContent) {
+      if (data.body.htmlContent && data.body.willGenerateNewPdf) {
         let htmlContent = data.body.htmlContent;
         htmlContent = htmlContent.replaceAll("&quot;", "");
 
@@ -632,7 +635,11 @@ class PartnerModel {
       const updatedQuotation =
         await PartnerQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { ...others, userId: partnerId ?? data.body.partnerId, pdfUrl: pdfUrl.length > 0 ? pdfUrl : existingQuotation.pdfUrl },
+          {
+            ...others,
+            userId: partnerId ?? data.body.partnerId,
+            pdfUrl: pdfUrl.length > 0 ? pdfUrl : existingQuotation.pdfUrl,
+          },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 

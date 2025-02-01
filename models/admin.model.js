@@ -428,25 +428,28 @@ class AdminModel {
 
       let htmlContent = data.body.htmlContent;
       htmlContent = htmlContent.replaceAll("&quot;", "");
+      let pdfUrl = "";
 
+      if (data.body.willGenerateNewPdf) {
+        const pdfBuffer = await generatePdfFromHtml(htmlContent);
+
+        // Step 2: Compress the PDF
+        const compressedPdfBuffer = await compressPdf(pdfBuffer);
+
+        // Step 3: Upload to S3
+        const uploadParams = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
+          Body: compressedPdfBuffer,
+          // Body: pdfBuffer,
+          ContentType: "application/pdf",
+        };
+
+        const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+        // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+        pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
+      }
       // Step 1: Convert HTML to PDF
-      const pdfBuffer = await generatePdfFromHtml(htmlContent);
-
-      // Step 2: Compress the PDF
-      const compressedPdfBuffer = await compressPdf(pdfBuffer);
-
-      // Step 3: Upload to S3
-      const uploadParams = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
-        Body: compressedPdfBuffer,
-        // Body: pdfBuffer,
-        ContentType: "application/pdf",
-      };
-
-      const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
-      // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
-      const pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
 
       const newQuotation = new AdminQuotationSchemaModel({
         ...data.body,
@@ -459,7 +462,11 @@ class AdminModel {
       return {
         status: true,
         statusCode: 200,
-        data: { link: pdfUrl, message: "Quotation saved successfully", id: newQuotation._id.toString() },
+        data: {
+          link: pdfUrl,
+          message: "Quotation saved successfully",
+          id: newQuotation._id.toString(),
+        },
         error: null,
       };
     } catch (error) {
@@ -485,25 +492,28 @@ class AdminModel {
       let updatedQuotation = null;
       let htmlContent = data.body.htmlContent;
       htmlContent = htmlContent.replaceAll("&quot;", "");
+      let pdfUrl = "";
 
-      // Step 1: Convert HTML to PDF
-      const pdfBuffer = await generatePdfFromHtml(htmlContent);
+      if (data.body.willGenerateNewPdf) {
+        // Step 1: Convert HTML to PDF
+        const pdfBuffer = await generatePdfFromHtml(htmlContent);
 
-      // Step 2: Compress the PDF
-      const compressedPdfBuffer = await compressPdf(pdfBuffer);
+        // Step 2: Compress the PDF
+        const compressedPdfBuffer = await compressPdf(pdfBuffer);
 
-      // Step 3: Upload to S3
-      const uploadParams = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
-        Body: compressedPdfBuffer,
-        // Body: pdfBuffer,
-        ContentType: "application/pdf",
-      };
+        // Step 3: Upload to S3
+        const uploadParams = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
+          Body: compressedPdfBuffer,
+          // Body: pdfBuffer,
+          ContentType: "application/pdf",
+        };
 
-      const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
-      // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
-      const pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
+        const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+        // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+        pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
+      }
 
       if (adminId) {
         updatedQuotation = await AdminQuotationSchemaModel.findOneAndUpdate(
