@@ -509,7 +509,7 @@ class PartnerModel {
           Body: compressedPdfBuffer,
           // Body: pdfBuffer,
           ContentType: "application/pdf",
-          ContentEncoding: "gzip",
+          // ContentEncoding: "gzip",
         };
 
         const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
