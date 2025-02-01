@@ -25,8 +25,7 @@ const TaxiSchema = new mongoose.Schema({
   userName: { type: String },
   isLocal: { type: Boolean },
   companyName: { type: String },
-  adminId: { type: String },
-  partnerId: { type: String },
+  userId: { type: String },
 });
 
 const AdminTaxiSchemaModel = adminDBConnection.model("Taxi", TaxiSchema);

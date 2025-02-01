@@ -77,13 +77,31 @@ partnerRouter.delete(
 partnerRouter.post(
   "/create-taxi",
   [partnerAuth()],
-  awaitHandlerFactory(PartnerController.createTaxi)
+  awaitHandlerFactory(PartnerController.upsertTaxi)
+);
+
+partnerRouter.put(
+  "/update-taxi",
+  [],
+  awaitHandlerFactory(PartnerController.upsertTaxi)
+);
+
+partnerRouter.delete(
+  "/delete-taxi",
+  [partnerAuth()],
+  awaitHandlerFactory(PartnerController.deleteTaxi)
 );
 
 partnerRouter.get(
   "/fetch-taxis",
   [partnerAuth()],
   awaitHandlerFactory(PartnerController.fetchTaxis)
+);
+
+partnerRouter.post(
+  "/fetch-taxi",
+  [],
+  awaitHandlerFactory(PartnerController.fetchTaxiData)
 );
 
 partnerRouter.get(

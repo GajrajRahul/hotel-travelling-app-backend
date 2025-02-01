@@ -89,7 +89,19 @@ adminRoute.put(
 adminRoute.post(
   "/create-taxi",
   [adminAuth()],
-  awaitHandlerFactory(AdminController.createTaxi)
+  awaitHandlerFactory(AdminController.upsertTaxi)
+);
+
+adminRoute.put(
+  "/update-taxi",
+  [adminAuth()],
+  awaitHandlerFactory(AdminController.upsertTaxi)
+);
+
+adminRoute.delete(
+  "/delete-taxi",
+  [adminAuth()],
+  awaitHandlerFactory(AdminController.deleteTaxi)
 );
 
 adminRoute.get(

@@ -157,14 +157,36 @@ class PartnerController {
     }
   };
 
-  createTaxi = async (req, res, next) => {
+  upsertTaxi = async (req, res, next) => {
     try {
       this.checkValidation(req);
-      const response = await PartnerModel.createTaxi(req);
+      const { id } = req.body;
+
+      let response;
+      if (id) {
+        response = await PartnerModel.updateTaxi(req);
+      } else {
+        response = await PartnerModel.createTaxi(req);
+      }
 
       const { statusCode } = response;
       res.status(statusCode).json(response);
-    } catch (error) {}
+    } catch (error) {
+      res.status(400).send({ status: false, data: null, error: error.message });
+    }
+  };
+
+  deleteTaxi = async (req, res, next) => {
+    try {
+      this.checkValidation(req);
+
+      let response = await PartnerModel.deleteTaxi(req);
+
+      const { statusCode } = response;
+      res.status(statusCode).json(response);
+    } catch (error) {
+      res.status(400).send({ status: false, data: null, error: error.message });
+    }
   };
 
   fetchTaxis = async (req, res, next) => {
@@ -179,29 +201,42 @@ class PartnerController {
     }
   };
 
+  fetchTaxiData = async (req, res, next) => {
+      try {
+        this.checkValidation(req);
+        const response = await PartnerModel.fetchTaxiData(req);
+  
+        const { statusCode } = response;
+        res.status(statusCode).json(response);
+      } catch (error) {
+        res.status(400).send({ status: false, data: null, error: error.message });
+      }
+    };
+  
+
   fetchNotifications = async (req, res, next) => {
-      try {
-        this.checkValidation(req);
-        const response = await PartnerModel.fetchNotifications(req);
-  
-        const { statusCode } = response;
-        res.status(statusCode).json(response);
-      } catch (error) {
-        res.status(400).send({ status: false, data: null, error: error.message });
-      }
-    };
-  
-    updateNotificationStatus = async (req, res, next) => {
-      try {
-        this.checkValidation(req);
-        const response = await PartnerModel.updateNotificationStatus(req.body);
-  
-        const { statusCode } = response;
-        res.status(statusCode).json(response);
-      } catch (error) {
-        res.status(400).send({ status: false, data: null, error: error.message });
-      }
-    };
+    try {
+      this.checkValidation(req);
+      const response = await PartnerModel.fetchNotifications(req);
+
+      const { statusCode } = response;
+      res.status(statusCode).json(response);
+    } catch (error) {
+      res.status(400).send({ status: false, data: null, error: error.message });
+    }
+  };
+
+  updateNotificationStatus = async (req, res, next) => {
+    try {
+      this.checkValidation(req);
+      const response = await PartnerModel.updateNotificationStatus(req.body);
+
+      const { statusCode } = response;
+      res.status(statusCode).json(response);
+    } catch (error) {
+      res.status(400).send({ status: false, data: null, error: error.message });
+    }
+  };
 }
 
 export default new PartnerController();

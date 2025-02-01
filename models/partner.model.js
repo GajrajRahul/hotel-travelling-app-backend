@@ -639,7 +639,7 @@ class PartnerModel {
             ...others,
             userId: partnerId ?? data.body.partnerId,
             pdfUrl: pdfUrl.length > 0 ? pdfUrl : existingQuotation.pdfUrl,
-            comment: data.body.comment || existingQuotation.comment || ''
+            comment: data.body.comment || existingQuotation.comment || "",
           },
           { new: true, runValidators: true } // new: true to return the updated document
         );
@@ -783,13 +783,75 @@ class PartnerModel {
         };
       }
 
-      const newTaxi = new PartnerTaxiSchemaModel({ ...data.body, partnerId });
+      const newTaxi = new PartnerTaxiSchemaModel({
+        ...data.body,
+        userId: partnerId,
+      });
       await newTaxi.save();
 
       return {
         status: true,
         statusCode: 200,
         data: "Saved Sccessfully",
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  updateTaxi = async (data) => {
+    const { id, userId } = data.body;
+
+    try {
+      const existingQuotation = await PartnerTaxiSchemaModel.findOneAndUpdate(
+        { _id: id, userId },
+        data.body,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+      if (existingQuotation) {
+        return {
+          status: true,
+          statusCode: 200,
+          data: "Updated",
+          error: null,
+        };
+      }
+      return {
+        status: false,
+        statusCode: 404,
+        data: null,
+        error: "Taxi Data not found",
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  deleteTaxi = async (data) => {
+    const { id } = data.body;
+
+    try {
+      await PartnerTaxiSchemaModel.findByIdAndDelete(id);
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: "Deleted",
         error: null,
       };
     } catch (error) {
@@ -819,7 +881,7 @@ class PartnerModel {
       }
 
       const existingTaxis = await PartnerTaxiSchemaModel.find({
-        partnerId,
+        userId: partnerId,
       });
 
       return {
@@ -829,6 +891,49 @@ class PartnerModel {
           ...taxis.toObject(),
           id: taxis._id.toString(),
         })),
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  fetchTaxiData = async (data) => {
+    const { adminId, partnerId, id } = data.body;
+
+    try {
+      if (!id) {
+        return {
+          status: false,
+          statusCode: 400,
+          data: null,
+          error: "Taxi id is required",
+        };
+      }
+
+      const existingTaxiData = await PartnerTaxiSchemaModel.findOne({
+        _id: id,
+        userId: partnerId,
+      });
+
+      if (!existingTaxiData) {
+        return {
+          status: false,
+          statusCode: 404,
+          data: null,
+          error: "Taxi data not found",
+        };
+      }
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: existingTaxiData,
         error: null,
       };
     } catch (error) {

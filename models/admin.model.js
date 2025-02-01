@@ -35,6 +35,7 @@ import {
   EmployeeNotificationSchema,
   PartnerNotificationSchema,
 } from "./schema/notificationSchema.modle.js";
+import mongoose from "mongoose";
 
 class AdminModel {
   adminSignUp = async (data) => {
@@ -817,7 +818,10 @@ class AdminModel {
         };
       }
 
-      const newTaxi = new AdminTaxiSchemaModel({ ...data.body, adminId });
+      const newTaxi = new AdminTaxiSchemaModel({
+        ...data.body,
+        userId: adminId,
+      });
       await newTaxi.save();
 
       return {
@@ -825,6 +829,88 @@ class AdminModel {
         statusCode: 200,
         data: "Saved Sccessfully",
         error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  updateTaxi = async (data) => {
+    const { id } = data.body;
+
+    try {
+      // const objectId = new mongoose.Types.ObjectId(id);
+      //   let updatedQuotation = null;
+      const results = await Promise.allSettled([
+        AdminTaxiSchemaModel.findOneAndUpdate({ _id: id }, data.body, {
+          new: true,
+        }),
+        PartnerTaxiSchemaModel.findOneAndUpdate({ _id: id }, data.body, {
+          new: true,
+        }),
+      ]);
+
+      const updatedTaxiData = results
+        .filter((res) => res.status === "fulfilled" && res.value !== null)
+        .map((res) => res.value)[0];
+
+      if (updatedTaxiData) {
+        return {
+          status: true,
+          statusCode: 200,
+          data: "Success",
+          error: null,
+        };
+      }
+
+      return {
+        status: false,
+        statusCode: 404,
+        data: null,
+        error: "Taxi Data not found",
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.message,
+      };
+    }
+  };
+
+  deleteTaxi = async (data) => {
+    const { id } = data.body;
+
+    try {
+      const results = await Promise.allSettled([
+        AdminTaxiSchemaModel.findByIdAndDelete(id),
+        PartnerTaxiSchemaModel.findByIdAndDelete(id),
+      ]);
+
+      const isDeleted = results.find(
+        (res) => res.status === "fulfilled" && res.value !== null
+      )?.value;
+
+      if (isDeleted) {
+        return {
+          status: true,
+          statusCode: 200,
+          data: "Success",
+          error: null,
+        };
+      }
+
+      return {
+        status: false,
+        statusCode: 404,
+        data: null,
+        error: "Taxi Data not found",
       };
     } catch (error) {
       return {
@@ -876,10 +962,10 @@ class AdminModel {
   };
 
   fetchTaxiData = async (data) => {
-    const { adminId, partnerId, taxiId } = data.body;
+    const { adminId, partnerId, id } = data.body;
 
     try {
-      if (!taxiId) {
+      if (!id) {
         return {
           status: false,
           statusCode: 400,
@@ -889,8 +975,8 @@ class AdminModel {
       }
 
       const existingTaxiData = adminId
-        ? await AdminTaxiSchemaModel.findOne({ _id: taxiId, adminId })
-        : await PartnerTaxiSchemaModel.findOne({ _id: taxiId, partnerId });
+        ? await AdminTaxiSchemaModel.findOne({ _id: id, userId: adminId })
+        : await PartnerTaxiSchemaModel.findOne({ _id: id, userId: partnerId });
 
       if (!existingTaxiData) {
         return {
