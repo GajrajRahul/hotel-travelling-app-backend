@@ -12,7 +12,7 @@ class UserModel {
     try {
       const objectId = new mongoose.Types.ObjectId(id);
       //   let updatedQuotation = null;
-      const updatedQuotation = await Promise.any([
+      const results = await Promise.allSettled([
         AdminQuotationSchemaModel.findOneAndUpdate(
           { _id: objectId },
           { $inc: { [action]: 1 } },
@@ -30,7 +30,10 @@ class UserModel {
         ),
       ]);
 
-      console.log("updatedQuotation: ", updatedQuotation)
+      const updatedQuotation = results
+        .filter((res) => res.status === "fulfilled" && res.value !== null)
+        .map((res) => res.value)[0];
+
       if (updatedQuotation) {
         return {
           status: true,
