@@ -535,10 +535,10 @@ class AdminModel {
       }
 
       return {
-        status: fasle,
+        status: false,
         statusCode: 404,
         data: null,
-        error: "Quptation not found",
+        error: "Quotation not found",
       };
     } catch (error) {
       return {

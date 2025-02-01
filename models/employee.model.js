@@ -564,7 +564,11 @@ class EmployeeModel {
       return {
         status: true,
         statusCode: 200,
-        data: { link: pdfUrl, message: "Quotation saved successfully", id: savedQuotation._id.toString() },
+        data: {
+          link: pdfUrl,
+          message: "Quotation saved successfully",
+          id: savedQuotation._id.toString(),
+        },
         error: null,
       };
     } catch (error) {
@@ -596,31 +600,9 @@ class EmployeeModel {
         };
       }
 
-      let htmlContent = data.body.htmlContent;
-      htmlContent = htmlContent.replaceAll("&quot;", "");
-
-      // Step 1: Convert HTML to PDF
-      const pdfBuffer = await generatePdfFromHtml(htmlContent);
-
-      // Step 2: Compress the PDF
-      const compressedPdfBuffer = await compressPdf(pdfBuffer);
-
-      // Step 3: Upload to S3
-      const uploadParams = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
-        Body: compressedPdfBuffer,
-        // Body: pdfBuffer,
-        ContentType: "application/pdf",
-      };
-
-      const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
-      // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
-      const pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
-
       const existingQuotation = await EmployeeQuotationSchemaModel.findOne({
         _id: id,
-        employeeId: employeeId ?? data.body.employeeId,
+        userId: employeeId ?? data.body.employeeId,
       });
       if (!existingQuotation) {
         return {
@@ -631,10 +613,35 @@ class EmployeeModel {
         };
       }
 
+      let pdfUrl = "";
+      if (data.body.htmlContent) {
+        let htmlContent = data.body.htmlContent;
+        htmlContent = htmlContent.replaceAll("&quot;", "");
+
+        // Step 1: Convert HTML to PDF
+        const pdfBuffer = await generatePdfFromHtml(htmlContent);
+
+        // Step 2: Compress the PDF
+        const compressedPdfBuffer = await compressPdf(pdfBuffer);
+
+        // Step 3: Upload to S3
+        const uploadParams = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
+          Body: compressedPdfBuffer,
+          // Body: pdfBuffer,
+          ContentType: "application/pdf",
+        };
+
+        const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+        // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+        pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
+      }
+
       const updatedQuotation =
         await EmployeeQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { ...others, userId: employeeId ?? data.body.employeeId, pdfUrl },
+          { ...others, userId: employeeId ?? data.body.employeeId, pdfUrl: pdfUrl.length > 0 ? pdfUrl : existingQuotation.pdfUrl },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import {
   AdminQuotationSchemaModel,
   EmployeeQuotationSchemaModel,
@@ -7,27 +8,29 @@ import {
 class UserModel {
   trackPdf = async (data) => {
     // action will be view or download
-    const { id, action } = data.body;
+    const { id, action } = data;
     try {
+      const objectId = new mongoose.Types.ObjectId(id);
       //   let updatedQuotation = null;
       const updatedQuotation = await Promise.any([
         AdminQuotationSchemaModel.findOneAndUpdate(
-          { _id: id },
+          { _id: objectId },
           { $inc: { [action]: 1 } },
           { new: true }
         ),
         EmployeeQuotationSchemaModel.findOneAndUpdate(
-          { _id: id },
+          { _id: objectId },
           { $inc: { [action]: 1 } },
           { new: true }
         ),
         PartnerQuotationSchemaModel.findOneAndUpdate(
-          { _id: id },
+          { _id: objectId },
           { $inc: { [action]: 1 } },
           { new: true }
         ),
       ]);
 
+      console.log("updatedQuotation: ", updatedQuotation)
       if (updatedQuotation) {
         return {
           status: true,
@@ -38,7 +41,7 @@ class UserModel {
       }
 
       return {
-        status: fasle,
+        status: false,
         statusCode: 404,
         data: null,
         error: "Quotation not found",

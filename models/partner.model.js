@@ -567,7 +567,11 @@ class PartnerModel {
       return {
         status: true,
         statusCode: 200,
-        data: { link: pdfUrl, message: "Quotation saved successfully", id: savedQuotation._id.toString() },
+        data: {
+          link: pdfUrl,
+          message: "Quotation saved successfully",
+          id: savedQuotation._id.toString(),
+        },
         error: null,
       };
     } catch (error) {
@@ -587,28 +591,6 @@ class PartnerModel {
     const { id, ...others } = data.body;
 
     try {
-      let htmlContent = data.body.htmlContent;
-      htmlContent = htmlContent.replaceAll("&quot;", "");
-
-      // Step 1: Convert HTML to PDF
-      const pdfBuffer = await generatePdfFromHtml(htmlContent);
-
-      // Step 2: Compress the PDF
-      const compressedPdfBuffer = await compressPdf(pdfBuffer);
-
-      // Step 3: Upload to S3
-      const uploadParams = {
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
-        Body: compressedPdfBuffer,
-        // Body: pdfBuffer,
-        ContentType: "application/pdf",
-      };
-
-      const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
-      // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
-      const pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
-
       const existingQuotation = await PartnerQuotationSchemaModel.findOne({
         _id: id,
         userId: partnerId ?? data.body.partnerId,
@@ -622,10 +604,35 @@ class PartnerModel {
         };
       }
 
+      let pdfUrl = "";
+      if (data.body.htmlContent) {
+        let htmlContent = data.body.htmlContent;
+        htmlContent = htmlContent.replaceAll("&quot;", "");
+
+        // Step 1: Convert HTML to PDF
+        const pdfBuffer = await generatePdfFromHtml(htmlContent);
+
+        // Step 2: Compress the PDF
+        const compressedPdfBuffer = await compressPdf(pdfBuffer);
+
+        // Step 3: Upload to S3
+        const uploadParams = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `itinerary-pdfs/${Date.now()}-arh.pdf`,
+          Body: compressedPdfBuffer,
+          // Body: pdfBuffer,
+          ContentType: "application/pdf",
+        };
+
+        const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+        // const pdfUrl = `https://${uploadParams.Bucket}.s3.amazonaws.com/${uploadParams.Key}`;
+        pdfUrl = `https://${uploadParams.Bucket}/${uploadParams.Key}`;
+      }
+
       const updatedQuotation =
         await PartnerQuotationSchemaModel.findByIdAndUpdate(
           id,
-          { ...others, userId: partnerId ?? data.body.partnerId, pdfUrl },
+          { ...others, userId: partnerId ?? data.body.partnerId, pdfUrl: pdfUrl.length > 0 ? pdfUrl : existingQuotation.pdfUrl },
           { new: true, runValidators: true } // new: true to return the updated document
         );
 
