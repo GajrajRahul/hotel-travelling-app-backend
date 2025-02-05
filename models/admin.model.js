@@ -39,16 +39,8 @@ import mongoose from "mongoose";
 
 class AdminModel {
   adminSignUp = async (data) => {
-    const {
-      logo,
-      name,
-      email,
-      password,
-      address,
-      companyName,
-      mobile,
-      referringAgent,
-    } = data;
+    const { companyName, designation, tagline, gender, title, about } = data;
+    const { logo, name, email, password, mobile, address } = data;
 
     try {
       const existingAdmin = await AdminAuthSchemaModel.findOne({
@@ -102,8 +94,13 @@ class AdminModel {
         address,
         companyName,
         mobile,
-        referringAgent,
         adminId,
+        status: "approved",
+        designation: designation || "",
+        tagline: tagline || "",
+        gender: gender || "",
+        title: title || "",
+        about: about || "",
       });
 
       await newAdmin.save();
@@ -143,7 +140,6 @@ class AdminModel {
         address,
         companyName,
         mobile,
-        referringAgent,
         adminId,
         status,
       } = existingAdmin;
@@ -171,7 +167,6 @@ class AdminModel {
           address,
           companyName,
           mobile,
-          referringAgent,
           adminId,
           status,
         },
@@ -668,6 +663,30 @@ class AdminModel {
     }
   };
 
+  getEmployeeQuoteCount = async (employee) => {
+    try {
+      const count = await EmployeeQuotationSchemaModel.countDocuments({
+        userId: employee.employeeId,
+      });
+      return count;
+    } catch (error) {
+      console.error("Error getting document count:", error);
+      return 0;
+    }
+  };
+
+  getPartnerQuoteCount = async (partner) => {
+    try {
+      const count = await PartnerQuotationSchemaModel.countDocuments({
+        userId: partner.partnerId,
+      });
+      return count;
+    } catch (error) {
+      console.error("Error getting document count:", error);
+      return 0;
+    }
+  };
+
   fetchAllUsers = async (data) => {
     try {
       const [partnerUsers, employeeUsers] = await Promise.allSettled([
@@ -675,18 +694,35 @@ class AdminModel {
         EmployeeAuthSchemaModel.find({}),
       ]);
 
-      const allUsers = [
+      let allUsers = [
         ...(partnerUsers.status === "fulfilled"
-          ? partnerUsers.value.map((partner) => {
-              return { ...partner.toObject(), role: "Partner" };
-            })
+          ? partnerUsers.value.map((partner) => ({
+              ...partner.toObject(),
+              role: "Partner",
+            }))
           : []),
         ...(employeeUsers.status === "fulfilled"
-          ? employeeUsers.value.map((employee) => {
-              return { ...employee.toObject(), role: "Employee" };
-            })
+          ? employeeUsers.value.map((employee) => ({
+              ...employee.toObject(),
+              role: "Employee",
+            }))
           : []),
       ];
+
+      allUsers = await Promise.all(
+        allUsers.map(async (user) => {
+          const totalQuote =
+            user.role === "Partner"
+              ? await this.getPartnerQuoteCount(user)
+              : await this.getEmployeeQuoteCount(user);
+
+          return {
+            ...user,
+            id: user._id.toString(),
+            totalQuote,
+          };
+        })
+      );
 
       return {
         status: true,

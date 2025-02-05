@@ -23,16 +23,8 @@ import { getIOInstance } from "../socket.js";
 
 class EmployeeModel {
   employeeSignUp = async (data) => {
-    const {
-      logo,
-      name,
-      email,
-      password,
-      address,
-      companyName,
-      mobile,
-      referringAgent,
-    } = data;
+    const { companyName, designation, tagline, gender, title, about } = data;
+    const { logo, name, email, password, mobile, address } = data;
 
     try {
       const existingEmployee = await EmployeeAuthSchemaModel.findOne({
@@ -86,10 +78,13 @@ class EmployeeModel {
         address,
         companyName,
         mobile,
-        referringAgent,
         employeeId,
         status: "pending",
-        isApproved: false, // remove this
+        designation: designation || "",
+        tagline: tagline || "",
+        gender: gender || "",
+        title: title || "",
+        about: about || "",
       });
 
       await newEmployee.save();
@@ -111,7 +106,7 @@ class EmployeeModel {
 
       try {
         getIOInstance()
-          .to("admins")
+          .to("admin")
           .emit("signup", {
             userId: employeeId,
             title: "New Signup Alert!",
@@ -125,14 +120,14 @@ class EmployeeModel {
             status: "pending",
           });
       } catch (err) {
-        // console.log(err);
-        // console.error("Socket.io not initialized. Cannot emit event.");
+        console.log(err);
+        console.error("Socket.io not initialized. Cannot emit event.");
       }
 
       return {
         status: true,
         statusCode: 200,
-        data: "Employee created successfully",
+        data: "Signup successful! Waiting for admin approval.",
         error: null,
       };
     } catch (error) {
@@ -164,9 +159,7 @@ class EmployeeModel {
         address,
         companyName,
         mobile,
-        referringAgent,
         employeeId,
-        isApproved,
         status,
       } = existingEmployee;
 
@@ -213,6 +206,19 @@ class EmployeeModel {
         }
       );
 
+      const updatedEmployeeData =
+        await EmployeeAuthSchemaModel.findOneAndUpdate(
+          {
+            email: email.toLowerCase(),
+          },
+          {
+            $inc: {
+              loginCount: 1,
+            },
+          },
+          { new: true }
+        );
+
       const response = {
         token,
         user_data: {
@@ -222,9 +228,9 @@ class EmployeeModel {
           address,
           companyName,
           mobile,
-          referringAgent,
           employeeId,
           status,
+          loginCount: updatedEmployeeData?.loginCount || 0,
         },
       };
 
@@ -544,7 +550,7 @@ class EmployeeModel {
 
         try {
           getIOInstance()
-            .to("admins")
+            .to("admin")
             .emit("quotation", {
               userId: employeeId,
               title: "Itinerary Approval Needed!",
@@ -648,7 +654,7 @@ class EmployeeModel {
             ...others,
             userId: employeeId ?? data.body.employeeId,
             pdfUrl: pdfUrl.length > 0 ? pdfUrl : existingQuotation.pdfUrl,
-            comment: data.body.comment || existingQuotation.comment || ''
+            comment: data.body.comment || existingQuotation.comment || "",
           },
           { new: true, runValidators: true } // new: true to return the updated document
         );

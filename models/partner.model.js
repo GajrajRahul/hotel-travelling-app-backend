@@ -23,16 +23,8 @@ import { getIOInstance } from "../socket.js";
 
 class PartnerModel {
   partnerSignUp = async (data) => {
-    const {
-      logo,
-      name,
-      email,
-      password,
-      address,
-      companyName,
-      mobile,
-      referringAgent,
-    } = data;
+    const { companyName, designation, tagline, gender, title, about } = data;
+    const { logo, name, email, password, mobile, address } = data;
 
     try {
       const existingPartner = await PartnerAuthSchemaModel.findOne({
@@ -86,10 +78,13 @@ class PartnerModel {
         address,
         companyName,
         mobile,
-        referringAgent,
         partnerId,
         status: "pending",
-        isApproved: false,
+        designation: designation || "",
+        tagline: tagline || "",
+        gender: gender || "",
+        title: title || "",
+        about: about || "",
       });
 
       await newPartner.save();
@@ -111,7 +106,7 @@ class PartnerModel {
 
       try {
         getIOInstance()
-          .to("admins")
+          .to("admin")
           .emit("signup", {
             userId: partnerId,
             title: "New Signup Alert!",
@@ -164,9 +159,7 @@ class PartnerModel {
         address,
         companyName,
         mobile,
-        referringAgent,
         partnerId,
-        isApproved,
         status,
       } = existingPartner;
 
@@ -213,6 +206,18 @@ class PartnerModel {
         }
       );
 
+      const updatedPartnerData = await PartnerAuthSchemaModel.findOneAndUpdate(
+        {
+          email: email.toLowerCase(),
+        },
+        {
+          $inc: {
+            loginCount: 1,
+          },
+        },
+        { new: true }
+      );
+
       const response = {
         token,
         user_data: {
@@ -222,9 +227,9 @@ class PartnerModel {
           address,
           companyName,
           mobile,
-          referringAgent,
           partnerId,
           status,
+          loginCount: updatedPartnerData?.loginCount || 0,
         },
       };
 
@@ -547,7 +552,7 @@ class PartnerModel {
 
         try {
           getIOInstance()
-            .to("admins")
+            .to("admin")
             .emit("quotation", {
               userId: partnerId,
               title: "Itinerary Approval Needed!",
