@@ -8,11 +8,12 @@ import {
 const NotificationSchema = new mongoose.Schema(
   {
     userId: { type: String, ref: "User", required: true },
-    type: { type: String, enum: ["signup", "quotation"], required: true },
+    type: { type: String, enum: ["signup", "quotation", "custom"], required: true },
     title: { type: String, required: true },
     description: { type: String },
     logo: { type: String },
     name: { type: String },
+    link: { type: String },
     quotationName: { type: String },
     quotationId: { type: String },
     email: { type: String },

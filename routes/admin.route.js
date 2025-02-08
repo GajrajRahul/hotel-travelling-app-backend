@@ -128,6 +128,12 @@ adminRoute.put(
   awaitHandlerFactory(AdminController.updateNotificationStatus)
 );
 
+adminRoute.post(
+  "/send-notification",
+  [adminAuth()],
+  awaitHandlerFactory(AdminController.sendCustomNotification)
+);
+
 adminRoute.get(
   "/logout",
   [adminAuth()],

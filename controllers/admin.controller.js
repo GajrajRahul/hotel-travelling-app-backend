@@ -259,6 +259,18 @@ class EmployeeController {
       res.status(400).send({ status: false, data: null, error: error.message });
     }
   };
+
+  sendCustomNotification = async (req, res, next) => {
+    try {
+      this.checkValidation(req);
+      const response = await AdminModel.sendCustomNotification(req.body);
+
+      const { statusCode } = response;
+      res.status(statusCode).json(response);
+    } catch (error) {
+      res.status(400).send({ status: false, data: null, error: error.message });
+    }
+  }
 }
 
 export default new EmployeeController();

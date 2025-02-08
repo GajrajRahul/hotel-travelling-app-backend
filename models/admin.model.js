@@ -1039,6 +1039,93 @@ class AdminModel {
     }
   };
 
+  sendCustomNotification = async (data) => {
+    const { title, description, link, logo, users } = data;
+
+    try {
+      let fileName = null;
+      let s3LogoUrl = null;
+      if (logo) {
+        const base64Data = logo.replace(/^data:image\/\w+;base64,/, "");
+        const buffer = Buffer.from(base64Data, "base64");
+        const extension = logo.substring(
+          "data:image/".length,
+          logo.indexOf(";base64")
+        );
+        fileName = `${randomUUID()}_${Date.now()}.${extension}`;
+
+        const uploadParams = {
+          Bucket: process.env.S3_BUCKET_NAME,
+          Key: `logos/${fileName}`,
+          Body: buffer,
+          ContentType: `image/${extension}`,
+          // ACL: "public-read",
+        };
+
+        const uploadResult = await s3.send(new PutObjectCommand(uploadParams));
+
+        // s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/logos/${fileName}`;
+        s3LogoUrl = `https://${process.env.S3_BUCKET_NAME}/${uploadParams.Key}`;
+      }
+
+      for (const user of users) {
+        const { userId, name, email } = user;
+        const createdAt = Date.now();
+        const notificationData = {
+          userId,
+          type: "custom",
+          title,
+          description,
+          logo: s3LogoUrl,
+          name,
+          link,
+          email,
+          createdAt,
+        };
+
+        let notification;
+        let savedNotification;
+        if (userId.includes("employee")) {
+          notification = new EmployeeNotificationSchema(notificationData);
+          savedNotification = await notification.save();
+        } else if (userId.includes("partner")) {
+          notification = new PartnerNotificationSchema(notificationData);
+          savedNotification = await notification.save();
+        }
+
+        try {
+          getIOInstance().to(userId).emit("custom", {
+            userId,
+            title,
+            name,
+            link,
+            type: "custom",
+            notificationId: savedNotification._id.toString(),
+            description,
+            createdAt,
+          });
+        } catch (err) {
+          // console.log("err in employee update quotation", err);
+          // console.error("Socket.io not initialized. Cannot emit event.");
+        }
+      }
+
+      return {
+        status: true,
+        statusCode: 200,
+        data: "Success",
+        error: null,
+      };
+    } catch (error) {
+      return {
+        status: false,
+        statusCode: 500,
+        data: null,
+        error: error.meaasge,
+      };
+    }
+  };
+
   fetchNotifications = async (data) => {
     try {
       const notifications = await AdminNotificationSchema.find({
@@ -1062,7 +1149,7 @@ class AdminModel {
         status: false,
         statusCode: 500,
         data: null,
-        error: "Something went wrong",
+        error: error.message,
       };
     }
   };
@@ -1086,7 +1173,7 @@ class AdminModel {
         status: false,
         statusCode: 500,
         data: null,
-        error: "Something went wrong",
+        error: error.message,
       };
     }
   };
